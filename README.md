@@ -1,4 +1,4 @@
-## DragonDroids 2021 code repo
+## Dragon Droids 2021 code repo
 
 ## NOTICE
 
