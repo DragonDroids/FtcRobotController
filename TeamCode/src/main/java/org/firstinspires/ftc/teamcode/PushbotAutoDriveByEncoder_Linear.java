@@ -68,7 +68,7 @@ import org.firstinspires.ftc.teamcode.HardwarePushbot;
  */
 
 @Autonomous(name="Pushbot: Auto Drive By Encoder", group="Pushbot")
-//@Disabled
+@Disabled
 public class PushbotAutoDriveByEncoder_Linear extends LinearOpMode {
 
     /* Declare OpMode members. */
