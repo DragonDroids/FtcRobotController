@@ -52,7 +52,6 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @TeleOp(name="Basic: Linear OpMode", group="Linear Opmode")
-@Disabled
 public class MecanumTeleOp extends LinearOpMode {
     HardwarePushbot robot = new HardwarePushbot();
 
@@ -103,6 +102,11 @@ public class MecanumTeleOp extends LinearOpMode {
             robot.backLeftDrive.setPower(backLeftPower);
             robot.frontRightDrive.setPower(frontRightPower);
             robot.backRightDrive.setPower(backRightPower);
+
+            telemetry.addData("Front Left", robot.frontLeftDrive.getCurrentPosition());
+            telemetry.addData("Front Right", robot.frontRightDrive.getCurrentPosition());
+            telemetry.addData("Back Left", robot.backLeftDrive.getCurrentPosition());
+            telemetry.addData("Back Right", robot.backRightDrive.getCurrentPosition());
         }
     }
 }
