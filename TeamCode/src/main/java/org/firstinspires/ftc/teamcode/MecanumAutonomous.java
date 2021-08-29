@@ -32,6 +32,8 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -65,12 +67,10 @@ public class MecanumAutonomous extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-
-        /*
-         * Initialize the drive system variables.
-         * The init() method of the hardware class does all the work here
-         */
         robot.init(hardwareMap);
+
+        // Set what happens after power is set to 0.0
+        robot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Ready to run");
@@ -79,7 +79,9 @@ public class MecanumAutonomous extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        moveMotors(0.5, 0.5, 0, 0.1);
+        // Move Forward
+        moveMotors(0.0, 0.5, 0, 0.5);
+        moveMotors(1.0, 0.0, 0, 0.5);
     }
 
     public void stopMotors() {
@@ -89,11 +91,13 @@ public class MecanumAutonomous extends LinearOpMode {
         robot.backRightDrive.setPower(0);
     }
 
-    public void moveMotors(double x, double y, double rx, double timeSeconds) {
+    public void moveMotors(double x, double y, double rx, double distance) {
         double frontLeftPower = y + x + rx;
         double backLeftPower = y - x + rx;
         double frontRightPower = y - x - rx;
         double backRightPower = y + x - rx;
+
+        //double positions = (robot.frontLeftDrive.getCurrentPosition() + robot.frontRightDrive.getCurrentPosition() + robot.backLeftDrive.getCurrentPosition() + robot.backRightDrive.getCurrentPosition()) / 4
 
         // Put powers in the range of -1 to 1 only if they aren't already
         // Not checking would cause us to always drive at full speed
@@ -118,9 +122,12 @@ public class MecanumAutonomous extends LinearOpMode {
         robot.backLeftDrive.setPower(backLeftPower);
         robot.frontRightDrive.setPower(frontRightPower);
         robot.backRightDrive.setPower(backRightPower);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < timeSeconds)) {
-            stopMotors();
+
+        while (opModeIsActive()) {
+            if (distance > 5) {
+                stopMotors();
+                break;
+            }
         }
     }
 }
