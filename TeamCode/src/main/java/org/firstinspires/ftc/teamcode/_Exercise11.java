@@ -20,6 +20,13 @@ public class _Exercise11 extends LinearOpMode {
         while (opModeIsActive()) {
             telemetry.addData("Our Heading (DEGREES)", board.getHeading(AngleUnit.DEGREES));
             telemetry.addData("Our Heading (RADIANS)", board.getHeading(AngleUnit.RADIANS));
+            if (board.getHeading(AngleUnit.DEGREES) == 0) {
+                board.setMotorSpeed(0.0);
+            } else if (board.getHeading(AngleUnit.DEGREES) > 0) {
+                board.setMotorSpeed(1.0);
+            } else {
+                board.setMotorSpeed(-1.0);
+            }
         }
     }
 }
