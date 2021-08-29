@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -58,10 +59,10 @@ public class HardwarePushbot
     public DcMotor  backLeftDrive   = null;
     public DcMotor  backRightDrive  = null;
 
-    public String frontLeftName = "motorFL";
-    public String frontRightName = "motorFR";
-    public String backLeftName = "motorBL";
-    public String backRightName = "motorBR";
+    public String frontLeftName = "frontLeft";
+    public String frontRightName = "frontRight";
+    public String backLeftName = "backLeft";
+    public String backRightName = "backRight";
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
@@ -91,5 +92,16 @@ public class HardwarePushbot
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
+
+        // Set reverse for NeverRest Motors
+        frontLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
+
+    public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
+        frontLeftDrive.setZeroPowerBehavior(behavior);
+        frontRightDrive.setZeroPowerBehavior(behavior);
+        backLeftDrive.setZeroPowerBehavior(behavior);
+        backRightDrive.setZeroPowerBehavior(behavior);
     }
  }
