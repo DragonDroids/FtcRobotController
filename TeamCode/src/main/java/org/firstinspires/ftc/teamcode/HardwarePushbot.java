@@ -58,6 +58,11 @@ public class HardwarePushbot
     public DcMotor  backLeftDrive   = null;
     public DcMotor  backRightDrive  = null;
 
+    public String frontLeftName = "motorFL";
+    public String frontRightName = "motorFR";
+    public String backLeftName = "motorBL";
+    public String backRightName = "motorBR";
+
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
 
@@ -70,10 +75,10 @@ public class HardwarePushbot
         hwMap = ahwMap;
 
         // Define and Initialize Motors
-        frontLeftDrive  = hwMap.get(DcMotor.class, "frontLeft");
-        frontRightDrive = hwMap.get(DcMotor.class, "frontRight");
-        backLeftDrive  = hwMap.get(DcMotor.class, "backLeft");
-        backRightDrive = hwMap.get(DcMotor.class, "backRight");
+        frontLeftDrive  = hwMap.get(DcMotor.class, frontLeftName);
+        frontRightDrive = hwMap.get(DcMotor.class, frontRightName);
+        backLeftDrive  = hwMap.get(DcMotor.class, backLeftName);
+        backRightDrive = hwMap.get(DcMotor.class, backRightName);
 
         // Set all motors to zero power
         frontLeftDrive.setPower(0);
