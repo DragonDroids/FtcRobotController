@@ -37,7 +37,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
  * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
@@ -51,9 +50,10 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Linear OpMode", group="Linear Opmode")
+@TeleOp(name="Mecanum TeleOp", group="Linear Opmode")
 public class MecanumTeleOp extends LinearOpMode {
     HardwarePushbot robot = new HardwarePushbot();
+    double speed = 0.5;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -71,8 +71,10 @@ public class MecanumTeleOp extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            double y = -gamepad1.left_stick_y; // Remember, this is reversed!
-            double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
+            speed = gamepad1.right_bumper ? 1.0 : 0.5;
+
+            double y = gamepad1.left_stick_y * speed; // Remember, this is reversed!
+            double x = -gamepad1.left_stick_x * 1.1 * speed; // Counteract imperfect strafing
             double rx = gamepad1.right_stick_x;
 
             double frontLeftPower = y + x + rx;
@@ -98,15 +100,18 @@ public class MecanumTeleOp extends LinearOpMode {
                 backRightPower /= max;
             }
 
+            // Set Powers
             robot.frontLeftDrive.setPower(frontLeftPower);
             robot.backLeftDrive.setPower(backLeftPower);
             robot.frontRightDrive.setPower(frontRightPower);
             robot.backRightDrive.setPower(backRightPower);
 
+            // Return Motor Positions (Debugging)
             telemetry.addData("Front Left", robot.frontLeftDrive.getCurrentPosition());
             telemetry.addData("Front Right", robot.frontRightDrive.getCurrentPosition());
             telemetry.addData("Back Left", robot.backLeftDrive.getCurrentPosition());
             telemetry.addData("Back Right", robot.backRightDrive.getCurrentPosition());
+            telemetry.addData("Speed", speed);
         }
     }
 }
