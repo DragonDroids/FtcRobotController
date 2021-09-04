@@ -54,7 +54,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class HardwarePushbot
 {
     /* Public OpMode members. */
-    public  DcMotor  frontLeftDrive   = null;
+    public DcMotor  frontLeftDrive   = null;
     public DcMotor  frontRightDrive  = null;
     public DcMotor  backLeftDrive   = null;
     public DcMotor  backRightDrive  = null;
@@ -63,6 +63,8 @@ public class HardwarePushbot
     public String frontRightName = "frontRight";
     public String backLeftName = "backLeft";
     public String backRightName = "backRight";
+
+    public double tickPerRev = 1.0;
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
@@ -94,8 +96,8 @@ public class HardwarePushbot
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
 
         // Set reverse for NeverRest Motors
-        frontLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {

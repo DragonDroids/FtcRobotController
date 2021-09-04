@@ -67,6 +67,8 @@ public class MecanumTeleOp extends LinearOpMode {
         robot.frontRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.backRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        robot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
         waitForStart();
 
         if (isStopRequested()) return;
@@ -76,30 +78,14 @@ public class MecanumTeleOp extends LinearOpMode {
 
             double y = gamepad1.left_stick_y * speed; // Remember, this is reversed!
             double x = -gamepad1.left_stick_x * 1.1 * speed; // Counteract imperfect strafing
-            double rx = gamepad1.right_stick_x;
+            double rx = -gamepad1.right_stick_x;
 
-            double frontLeftPower = y + x + rx;
-            double backLeftPower = y - x + rx;
-            double frontRightPower = y - x - rx;
-            double backRightPower = y + x - rx;
-
-            // Put powers in the range of -1 to 1 only if they aren't already
-            // Not checking would cause us to always drive at full speed
-            if (Math.abs(frontLeftPower) > 1 || Math.abs(backLeftPower) > 1 ||
-                    Math.abs(frontRightPower) > 1 || Math.abs(backRightPower) > 1) {
-                // Find the largest power
-                double max = 0;
-                max = Math.max(Math.abs(frontLeftPower), Math.abs(backLeftPower));
-                max = Math.max(Math.abs(frontRightPower), max);
-                max = Math.max(Math.abs(backRightPower), max);
-
-                // Divide everything by max (it's positive so we don't need to worry
-                // about signs)
-                frontLeftPower /= max;
-                backLeftPower /= max;
-                frontRightPower /= max;
-                backRightPower /= max;
-            }
+            // Find each motor powers
+            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+            double frontLeftPower = (y + x + rx) / denominator;
+            double backLeftPower = (y - x + rx) / denominator;
+            double frontRightPower = (y - x - rx) / denominator;
+            double backRightPower = (y + x - rx) / denominator;
 
             // Set Powers
             robot.frontLeftDrive.setPower(frontLeftPower);
@@ -113,6 +99,7 @@ public class MecanumTeleOp extends LinearOpMode {
             telemetry.addData("Back Left", robot.backLeftDrive.getCurrentPosition());
             telemetry.addData("Back Right", robot.backRightDrive.getCurrentPosition());
             telemetry.addData("Speed", speed);
+            telemetry.update();
         }
     }
 }
