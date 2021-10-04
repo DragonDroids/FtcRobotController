@@ -54,7 +54,10 @@ import com.qualcomm.robotcore.util.Range;
 
 public class MecanumTeleOp extends LinearOpMode {
     HardwarePushbot robot = new HardwarePushbot();
+    double maxSpeed = 1;
+    double minSpeed = 0.5;
     double speed = 0.5;
+    boolean variableSpeed = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -74,7 +77,11 @@ public class MecanumTeleOp extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            speed = gamepad1.right_bumper ? 1.0 : 0.5;
+            if (variableSpeed) {
+                speed = minSpeed + (gamepad1.right_trigger * (maxSpeed - minSpeed));
+            } else {
+                speed = gamepad1.right_bumper ? maxSpeed : minSpeed;
+            }
 
             double y = gamepad1.left_stick_y * speed; // Remember, this is reversed!
             double x = -gamepad1.left_stick_x * 1.1 * speed; // Counteract imperfect strafing

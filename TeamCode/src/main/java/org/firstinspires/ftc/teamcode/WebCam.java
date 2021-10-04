@@ -122,7 +122,7 @@ public class WebCam extends LinearOpMode {
             // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
             // should be set to the value of the images used to create the TensorFlow Object Detection model
             // (typically 16/9).
-            tfod.setZoom(1.2, 16.0/9.0);
+            tfod.setZoom(1.3, 16.0/9.0);
         }
 
         /** Wait for the game to begin */
@@ -148,7 +148,7 @@ public class WebCam extends LinearOpMode {
                             telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                                     recognition.getRight(), recognition.getBottom());
                             i++;
-                            double position = Math.floor((recognition.getLeft() / 100 + 1) / 2) - 2;
+                            double position = Math.round((recognition.getLeft() / 100 + 1) / 2) - 2;
 
                             telemetry.addData("Element Pos", position);
                         }
