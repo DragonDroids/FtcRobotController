@@ -58,11 +58,13 @@ public class HardwarePushbot
     public DcMotor  frontRightDrive  = null;
     public DcMotor  backLeftDrive   = null;
     public DcMotor  backRightDrive  = null;
+    public DcMotor  carousel = true;
 
     public String frontLeftName = "frontLeft";
     public String frontRightName = "frontRight";
     public String backLeftName = "backLeft";
     public String backRightName = "backRight";
+    public String carouselName = "carousel";
 
     public double tickPerRev = 1.0;
 
@@ -82,9 +84,10 @@ public class HardwarePushbot
         frontRightDrive = hwMap.get(DcMotor.class, frontRightName);
         backLeftDrive  = hwMap.get(DcMotor.class, backLeftName);
         backRightDrive = hwMap.get(DcMotor.class, backRightName);
+        carousel = hwMap.get(DcMotor.class, carouselName);
 
         // Set all motors to zero power
-        frontLeftDrive.setPower(0);
+        frontLeftDrive.setPower(0);\
         frontRightDrive.setPower(0);
         backLeftDrive.setPower(0);
         backRightDrive.setPower(0);

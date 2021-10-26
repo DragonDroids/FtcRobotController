@@ -83,6 +83,12 @@ public class MecanumTeleOp extends LinearOpMode {
                 speed = gamepad1.right_bumper ? maxSpeed : minSpeed;
             }
 
+            if (gamepad1.a) {
+                robot.carousel.setPower(1.0);
+            } else {
+                robot.carousel.setPower(0.0);
+            }
+
             double y = gamepad1.left_stick_y * speed; // Remember, this is reversed!
             double x = -gamepad1.left_stick_x * 1.1 * speed; // Counteract imperfect strafing
             double rx = -gamepad1.right_stick_x;
@@ -94,7 +100,7 @@ public class MecanumTeleOp extends LinearOpMode {
             double frontRightPower = (y - x - rx) / denominator;
             double backRightPower = (y + x - rx) / denominator;
 
-            // Set Powers
+            // Set Motor Powers
             robot.frontLeftDrive.setPower(frontLeftPower);
             robot.backLeftDrive.setPower(backLeftPower);
             robot.frontRightDrive.setPower(frontRightPower);
