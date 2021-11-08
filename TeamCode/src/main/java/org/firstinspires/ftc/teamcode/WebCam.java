@@ -32,6 +32,9 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
 import java.util.List;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -63,9 +66,10 @@ public class WebCam extends LinearOpMode {
      *  FreightFrenzy_BC.tflite  0: Ball,  1: Cube
      *  FreightFrenzy_DM.tflite  0: Duck,  1: Marker
      */
-    private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
+    private static final String TFOD_MODEL_ASSET = "model_ycup.tflite";
 
     private static final String[] LABELS = {
+            "ycup",
             "Ball",
             "Cube",
             "Duck",
@@ -102,12 +106,26 @@ public class WebCam extends LinearOpMode {
      */
     private TFObjectDetector tfod;
 
+    HardwarePushbot robot = new HardwarePushbot();
+    double maxSpeed = 1;
+    double minSpeed = 0.5;
+    double speed = 0.5;
+    boolean variableSpeed = true;
+
     @Override
     public void runOpMode() {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
         initVuforia();
         initTfod();
+        robot.init(hardwareMap);
+
+        // Reverse the right side motors
+        // Reverse left motors if you are using NeveRests
+        robot.frontRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.backRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        robot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         /**
          * Activate TensorFlow Object Detection before we wait for the start command.
@@ -132,6 +150,41 @@ public class WebCam extends LinearOpMode {
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
+                if (variableSpeed) {
+                    speed = minSpeed + (gamepad1.right_trigger * (maxSpeed - minSpeed));
+                } else {
+                    speed = gamepad1.right_bumper ? maxSpeed : minSpeed;
+                }
+
+                if (!robot.carSw.getState()) {
+                    robot.carousel.setPower(-0.5);
+                } else {
+                    robot.carousel.setPower(0.0);
+                }
+
+                double y = gamepad1.left_stick_y * speed; // Remember, this is reversed!
+                double x = -gamepad1.left_stick_x * 1.1 * speed; // Counteract imperfect strafing
+                double rx = -gamepad1.right_stick_x;
+
+                // Find each motor powers
+                double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+                double frontLeftPower = (y + x + rx) / denominator;
+                double backLeftPower = (y - x + rx) / denominator;
+                double frontRightPower = (y - x - rx) / denominator;
+                double backRightPower = (y + x - rx) / denominator;
+
+                // Set Motor Powers
+                robot.frontLeftDrive.setPower(frontLeftPower);
+                robot.backLeftDrive.setPower(backLeftPower);
+                robot.frontRightDrive.setPower(frontRightPower);
+                robot.backRightDrive.setPower(backRightPower);
+
+                // Return Motor Positions (Debugging)
+                telemetry.addData("Front Left", robot.frontLeftDrive.getCurrentPosition());
+                telemetry.addData("Front Right", robot.frontRightDrive.getCurrentPosition());
+                telemetry.addData("Back Left", robot.backLeftDrive.getCurrentPosition());
+                telemetry.addData("Back Right", robot.backRightDrive.getCurrentPosition());
+                telemetry.addData("Speed", speed);
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information  is available since
                     // the last time that call was made.
@@ -148,7 +201,7 @@ public class WebCam extends LinearOpMode {
                             telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                                     recognition.getRight(), recognition.getBottom());
                             i++;
-                            double position = Math.round((recognition.getLeft() / 100 + 1) / 2) - 2;
+                            double position = Math.round(((recognition.getLeft() + recognition.getWidth() / 2) / 100 + 1) / 2) - 3;
 
                             telemetry.addData("Element Pos", position);
                         }
@@ -184,7 +237,7 @@ public class WebCam extends LinearOpMode {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minResultConfidence = 0.8f;
+        tfodParameters.minResultConfidence = 0.9f;
         tfodParameters.isModelTensorFlow2 = true;
         tfodParameters.inputSize = 320;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);

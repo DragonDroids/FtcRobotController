@@ -31,8 +31,10 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -58,13 +60,15 @@ public class HardwarePushbot
     public DcMotor  frontRightDrive  = null;
     public DcMotor  backLeftDrive   = null;
     public DcMotor  backRightDrive  = null;
-    public DcMotor  carousel = true;
+    public DcMotor  carousel = null;
+    public DigitalChannel carSw = null;
 
     public String frontLeftName = "frontLeft";
     public String frontRightName = "frontRight";
     public String backLeftName = "backLeft";
     public String backRightName = "backRight";
     public String carouselName = "carousel";
+    public String carSwName = "carSw";
 
     public double tickPerRev = 1.0;
 
@@ -85,18 +89,20 @@ public class HardwarePushbot
         backLeftDrive  = hwMap.get(DcMotor.class, backLeftName);
         backRightDrive = hwMap.get(DcMotor.class, backRightName);
         carousel = hwMap.get(DcMotor.class, carouselName);
+        carSw = hwMap.get(DigitalChannel.class, carSwName);
 
         // Set all motors to zero power
-        frontLeftDrive.setPower(0);\
+        frontLeftDrive.setPower(0);
         frontRightDrive.setPower(0);
         backLeftDrive.setPower(0);
         backRightDrive.setPower(0);
 
-        // Set all motors to run without encoders.
+        // Set all motors to run using encoders.
         frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
+        carSw.setMode(DigitalChannel.Mode.INPUT);
 
         // Set reverse for NeverRest Motors
         frontRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
