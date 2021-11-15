@@ -5,6 +5,7 @@ import org.firstinspires.ftc.teamcode.HardwarePushbot;
 import static java.lang.Thread.sleep;
 
 public class Move {
+    private static int moveTimeout = 5000;
     private static HardwarePushbot robot;
 
     public Move (HardwarePushbot _robot) {
@@ -18,7 +19,7 @@ public class Move {
         robot.backRightDrive.setPower(0);
     }
 
-    public static int moveMotors(double x, double y, double rx, int time, boolean carousel) {
+    public static void moveMotors(double x, double y, double rx, RobotPosition position) {
         double frontLeftPower = y + x + rx;
         double backLeftPower = y - x + rx;
         double frontRightPower = y - x - rx;
@@ -44,35 +45,23 @@ public class Move {
             backRightPower /= max;
         }
 
+        // Set Targets
+        robot.frontLeftDrive.setTargetPosition(position.frontLeftTarget);
+        robot.frontRightDrive.setTargetPosition(position.frontRightTarget);
+        robot.backLeftDrive.setTargetPosition(position.backLeftTarget);
+        robot.backRightDrive.setTargetPosition(position.backRightTarget);
+
         // Set Powers
         robot.frontLeftDrive.setPower(frontLeftPower);
         robot.backLeftDrive.setPower(backLeftPower);
         robot.frontRightDrive.setPower(frontRightPower);
         robot.backRightDrive.setPower(backRightPower);
 
-        double timeToTravel = time / Math.pow(Math.pow(x, 2) + Math.pow(y, 2), 0.5);
-
-        int moveTime = 0;
-
-        if (!carousel) {
-            try {
-                sleep(time);
-            } catch (InterruptedException exception) {
-                exception.printStackTrace();
-            }
-        } else {
-            while (robot.carSw.getState()) {
-                try {
-                    sleep(time);
-                } catch (InterruptedException exception) {
-                    exception.printStackTrace();
-                }
-                moveTime+=30;
-            }
+        try {
+            sleep(moveTimeout);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-
         stopMotors();
-
-        return moveTime;
     }
 }

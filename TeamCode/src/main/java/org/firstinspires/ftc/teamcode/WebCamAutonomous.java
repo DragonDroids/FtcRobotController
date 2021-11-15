@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.libs.Move;
+import org.firstinspires.ftc.teamcode.libs.RobotPosition;
 
 import java.util.List;
 
@@ -75,12 +76,11 @@ public class WebCamAutonomous extends LinearOpMode {
         telemetry.addData("Positions", positionDetected);
         telemetry.update();
 
-        int distTravelledCar;
-        distTravelledCar = Move.moveMotors(0.0, -0.2, 0.0, 30, true);
+        Move.moveMotors(0.0, -0.2, 0.0, new RobotPosition(1000,1000,1000,1000));
         robot.carousel.setPower(-0.5);
         sleep(2500);
         robot.carousel.setPower(0);
-        Move.moveMotors(0.0, 0.2, 0.0, distTravelledCar, false);
+        Move.moveMotors(0.0, 0.2, 0.0, new RobotPosition(1000,1000,1000,1000));
     }
 
     private void initVuforia() {
