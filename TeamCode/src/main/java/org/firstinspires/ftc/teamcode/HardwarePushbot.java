@@ -61,6 +61,7 @@ public class HardwarePushbot
     public DcMotor  backLeftDrive   = null;
     public DcMotor  backRightDrive  = null;
     public DcMotor  carousel = null;
+    public DcMotor  armLift = null;
     public DigitalChannel carSw = null;
 
     public String frontLeftName = "frontLeft";
@@ -68,6 +69,7 @@ public class HardwarePushbot
     public String backLeftName = "backLeft";
     public String backRightName = "backRight";
     public String carouselName = "carousel";
+    public String armLiftName = "armLift";
     public String carSwName = "carSw";
 
     public double tickPerRev = 1.0;
@@ -89,6 +91,7 @@ public class HardwarePushbot
         backLeftDrive  = hwMap.get(DcMotor.class, backLeftName);
         backRightDrive = hwMap.get(DcMotor.class, backRightName);
         carousel = hwMap.get(DcMotor.class, carouselName);
+        armLift = hwMap.get(DcMotor.class, armLiftName);
         carSw = hwMap.get(DigitalChannel.class, carSwName);
 
         // Set all motors to zero power
@@ -96,12 +99,15 @@ public class HardwarePushbot
         frontRightDrive.setPower(0);
         backLeftDrive.setPower(0);
         backRightDrive.setPower(0);
+        armLift.setTargetPosition(50);
+        armLift.setPower(1.0);
 
         // Set all motors to run using encoders.
         frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
+        armLift.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         carSw.setMode(DigitalChannel.Mode.INPUT);
 
         // Set reverse for NeverRest Motors
