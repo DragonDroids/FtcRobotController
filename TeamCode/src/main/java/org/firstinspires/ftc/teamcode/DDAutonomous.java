@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.libs.RobotPosition;
 import java.util.List;
 
 @Autonomous(name = "DDAuto", group = "Linear Opmode")
-public class WebCamAutonomous extends LinearOpMode {
+public class DDAutonomous extends LinearOpMode {
     HardwarePushbot robot = new HardwarePushbot();
 
     /*
