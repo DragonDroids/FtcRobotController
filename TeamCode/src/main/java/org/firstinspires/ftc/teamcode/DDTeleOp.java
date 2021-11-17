@@ -73,6 +73,14 @@ public class DDTeleOp extends LinearOpMode {
 
         robot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
+        /*
+        This code is to stabilize the arm prior to the run.
+        */
+//        robot.armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        robot.armLift.setTargetPosition((int) Math.round((10 / 360) * 537.7));
+//        robot.armLift.setPower(0.4);
+        //sleep(100);
+
         waitForStart();
 
         if (isStopRequested()) return;
@@ -113,6 +121,7 @@ public class DDTeleOp extends LinearOpMode {
             telemetry.addData("Back Left", robot.backLeftDrive.getCurrentPosition());
             telemetry.addData("Back Right", robot.backRightDrive.getCurrentPosition());
             telemetry.addData("Speed", speed);
+            telemetry.addData("Stuff: ", robot.armLift.getCurrentPosition());
             telemetry.update();
         }
     }
