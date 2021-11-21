@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -48,7 +49,7 @@ public class DDAutonomous extends LinearOpMode {
     End TensorFlow Stuff.
      */
 
-    private char positionDetected = 'a';
+    private char positionDetected = 'N';
 
     @Override
     public void runOpMode() {
@@ -56,7 +57,6 @@ public class DDAutonomous extends LinearOpMode {
 
         initVuforia();
         initTfod();
-
         if (tfod != null) {
             tfod.activate();
 
@@ -65,22 +65,37 @@ public class DDAutonomous extends LinearOpMode {
 
         telemetry.addData(">", "Press Play to start OP mode");
         telemetry.update();
+        //if (isStopRequested()) return;
         waitForStart();
         sleep(500);
 
-        positionDetected = detectPosition();
-        while (positionDetected == 'N') {
-            positionDetected = detectPosition();
+        if (opModeIsActive()) {
+
+            //sleep(500);
+
+            //positionDetected = detectPosition();
+            while (opModeIsActive()) {
+                //initialize motor arm
+                //robot.armLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                telemetry.addData("Before Position", robot.armLift.getCurrentPosition());
+                robot.armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                robot.armLift.setTargetPosition(robot.armLift.getCurrentPosition() + 40);
+                robot.armLift.setPower(0.6);
+                telemetry.addData("After Position", robot.armLift.getCurrentPosition());
+                telemetry.update();
+                while (positionDetected == 'N') {
+                    positionDetected = detectPosition();
+                }
+
+                telemetry.addData("Positions", positionDetected);
+                telemetry.update();
+
+
+//            carMission();
+//            telemetry.addData("Moved to carousel, now moving to", positionDetected);
+//            telemetry.update();
+            }
         }
-
-        telemetry.addData("Positions", positionDetected);
-        telemetry.update();
-
-        Move.moveMotors(0.0, -0.2, 0.0, new RobotPosition(1000,1000,1000,1000));
-        robot.carousel.setPower(-0.5);
-        sleep(2500);
-        robot.carousel.setPower(0);
-        Move.moveMotors(0.0, 0.2, 0.0, new RobotPosition(1000,1000,1000,1000));
     }
 
     private void initVuforia() {
@@ -119,13 +134,12 @@ public class DDAutonomous extends LinearOpMode {
                 i++;
                 int position = Math.round(((recognition.getLeft() + recognition.getWidth() / 2) / 100 + 1) / 2) - 2;
 
-                telemetry.addData("Element Pos", position);
 
                 pos = position;
             }
-            telemetry.update();
+            //telemetry.update();
         }
-
+        telemetry.addData("Element Pos", pos);
         return POSITION_KEY[pos];
     }
 
@@ -135,8 +149,15 @@ public class DDAutonomous extends LinearOpMode {
         robot.backLeftDrive.setPower(0);
         robot.backRightDrive.setPower(0);
     }
+    private void carMission () {
+        int timeTakenCarousel = moveMotors(0.0, -0.4, 0.0, 500, true);
+        robot.carousel.setPower(0.5);
+        sleep(1500);
+        robot.carousel.setPower(0.0);
+        moveMotors(0.0, 0.4, 0.0, timeTakenCarousel, false);
+    }
 
-    public void moveMotors(double x, double y, double rx, int time, boolean carousel) {
+    public int moveMotors(double x, double y, double rx, int time, boolean carousel) {
         double frontLeftPower = y + x + rx;
         double backLeftPower = y - x + rx;
         double frontRightPower = y - x - rx;
@@ -168,14 +189,22 @@ public class DDAutonomous extends LinearOpMode {
         robot.frontRightDrive.setPower(frontRightPower);
         robot.backRightDrive.setPower(backRightPower);
 
+        int timeTaken = 0;
+
         if (!carousel) {
             sleep(time);
         } else {
             while (robot.carSw.getState()) {
+                timeTaken+=30;
                 sleep(30);
             }
         }
 
+        if (isStopRequested()) {
+            stopMotors();
+            return timeTaken;
+        }
         stopMotors();
+        return timeTaken;
     }
 }

@@ -6,8 +6,7 @@ public class RobotPosition {
     public int backLeftTarget;
     public int backRightTarget;
 
-    public RobotPosition (int frontLeftPos, int frontRightPos,
-                          int backLeftPos, int backRightPos) {
+    public RobotPosition (int frontLeftPos, int frontRightPos, int backLeftPos, int backRightPos) {
         frontLeftTarget = frontLeftPos;
         frontRightTarget = frontRightPos;
         backLeftTarget = backLeftPos;

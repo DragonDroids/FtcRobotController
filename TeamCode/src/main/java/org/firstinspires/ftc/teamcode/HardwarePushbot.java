@@ -72,7 +72,7 @@ public class HardwarePushbot
     public String armLiftName = "armLift";
     public String carSwName = "carSw";
 
-    public double tickPerRev = 1.0;
+    public double tickPerRev = 537.7;
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
@@ -121,4 +121,4 @@ public class HardwarePushbot
         backLeftDrive.setZeroPowerBehavior(behavior);
         backRightDrive.setZeroPowerBehavior(behavior);
     }
- }
+}
