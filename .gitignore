@@ -7,7 +7,7 @@
 !libs/*.aar
 
 #PID path files
-!*.hprof
+*.hprof
 
 # Files for the ART/Dalvik VM
 *.dex
