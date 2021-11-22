@@ -65,24 +65,16 @@ public class DDAutonomous extends LinearOpMode {
 
         telemetry.addData(">", "Press Play to start OP mode");
         telemetry.update();
-        //if (isStopRequested()) return;
-        waitForStart();
-        sleep(500);
 
         if (opModeIsActive()) {
 
-            //sleep(500);
-
             //positionDetected = detectPosition();
             while (opModeIsActive()) {
+
                 //initialize motor arm
-                //robot.armLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                telemetry.addData("Before Position", robot.armLift.getCurrentPosition());
-                robot.armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                robot.armLift.setTargetPosition(robot.armLift.getCurrentPosition() + 40);
-                robot.armLift.setPower(0.6);
-                telemetry.addData("After Position", robot.armLift.getCurrentPosition());
-                telemetry.update();
+                initArm(40);
+
+                //Detect position of Team Element
                 while (positionDetected == 'N') {
                     positionDetected = detectPosition();
                 }
@@ -90,8 +82,8 @@ public class DDAutonomous extends LinearOpMode {
                 telemetry.addData("Positions", positionDetected);
                 telemetry.update();
 
-
-//            carMission();
+                //move to Carousel
+                carMission();
 //            telemetry.addData("Moved to carousel, now moving to", positionDetected);
 //            telemetry.update();
             }
@@ -148,6 +140,19 @@ public class DDAutonomous extends LinearOpMode {
         robot.frontRightDrive.setPower(0);
         robot.backLeftDrive.setPower(0);
         robot.backRightDrive.setPower(0);
+    }
+    private boolean initArm(int aPos) {
+        boolean armStat = false;
+        //robot.armLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        telemetry.addData("Before Position", robot.armLift.getCurrentPosition());
+        robot.armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        robot.armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.armLift.setTargetPosition(robot.armLift.getCurrentPosition() + aPos);
+        robot.armLift.setPower(0.6);
+        telemetry.addData("After Position", robot.armLift.getCurrentPosition());
+        telemetry.update();
+        armStat = true;
+        return armStat;
     }
     private void carMission () {
         int timeTakenCarousel = moveMotors(0.0, -0.4, 0.0, 500, true);

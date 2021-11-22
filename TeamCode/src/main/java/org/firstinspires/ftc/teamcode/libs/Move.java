@@ -5,7 +5,7 @@ import org.firstinspires.ftc.teamcode.HardwarePushbot;
 import static java.lang.Thread.sleep;
 
 public class Move {
-    private static int moveTimeout = 5000;
+    private static final int moveTimeout = 5000;
     private static HardwarePushbot robot;
 
     public Move (HardwarePushbot _robot) {
