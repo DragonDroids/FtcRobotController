@@ -66,11 +66,12 @@ public class DDAutonomous extends LinearOpMode {
         telemetry.addData(">", "Press Play to start OP mode");
         telemetry.update();
         waitForStart();
-        if (opModeIsActive()) {
 
+        if (opModeIsActive()) {
+            telemetry.addData("the", "active");
             //positionDetected = detectPosition();
             while (opModeIsActive()) {
-
+                telemetry.addData("the", "start");
                 //initialize motor arm
                 initArm(20);
 
@@ -83,7 +84,7 @@ public class DDAutonomous extends LinearOpMode {
                 telemetry.update();
 
                 //move to Carousel
-                carMission();
+                //carMission();
 //            telemetry.addData("Moved to carousel, now moving to", positionDetected);
 //            telemetry.update();
             }

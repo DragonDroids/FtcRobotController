@@ -99,8 +99,6 @@ public class HardwarePushbot
         frontRightDrive.setPower(0);
         backLeftDrive.setPower(0);
         backRightDrive.setPower(0);
-        armLift.setTargetPosition(50);
-        armLift.setPower(1.0);
 
         // Set all motors to run using encoders.
         frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
