@@ -73,7 +73,7 @@ public class DDAutonomous extends LinearOpMode {
             while (opModeIsActive()) {
                 telemetry.addData("the", "start");
                 //initialize motor arm
-                initArm(20);
+//                initArm(20);
 
                 //Detect position of Team Element
                 while (positionDetected == 'N') {

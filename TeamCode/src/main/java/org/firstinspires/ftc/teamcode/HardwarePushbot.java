@@ -29,6 +29,9 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.control.PIDFController;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -37,22 +40,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-/**
- * This is NOT an opmode.
- *
- * This class can be used to define all the specific hardware for a single robot.
- * In this case that robot is a Pushbot.
- * See PushbotTeleopTank_Iterative and others classes starting with "Pushbot" for usage examples.
- *
- * This hardware class assumes the following device names have been configured on the robot:
- * Note:  All names are lower case and some have single spaces between words.
- *
- * Motor channel:  Left  drive motor:        "left_drive"
- * Motor channel:  Right drive motor:        "right_drive"
- * Motor channel:  Manipulator drive motor:  "left_arm"
- * Servo channel:  Servo to open left claw:  "left_hand"
- * Servo channel:  Servo to open right claw: "right_hand"
- */
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 public class HardwarePushbot
 {
     /* Public OpMode members. */
@@ -63,6 +52,7 @@ public class HardwarePushbot
     public DcMotor  carousel = null;
     public DcMotor  armLift = null;
     public DigitalChannel carSw = null;
+    public BNO055IMU imu = null;
 
     public String frontLeftName = "frontLeft";
     public String frontRightName = "frontRight";
@@ -71,6 +61,19 @@ public class HardwarePushbot
     public String carouselName = "carousel";
     public String armLiftName = "armLift";
     public String carSwName = "carSw";
+
+    private double denominator;
+    public double frontLeftPower;
+    public double backLeftPower;
+    public double frontRightPower;
+    public double backRightPower;
+    public double speed;
+    private double x;
+    private double y;
+    private double rx;
+    private double rotationVel;
+    private double gyroAngle;
+    public double lastError;
 
     public double tickPerRev = 537.7;
 
@@ -85,6 +88,14 @@ public class HardwarePushbot
         // Save reference to Hardware map
         hwMap = ahwMap;
 
+        // IMU Params
+        BNO055IMU.Parameters imuParameters = new BNO055IMU.Parameters();
+
+        imuParameters.mode                = BNO055IMU.SensorMode.IMU;
+        imuParameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        imuParameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        imuParameters.loggingEnabled      = false;
+
         // Define and Initialize Motors
         frontLeftDrive  = hwMap.get(DcMotor.class, frontLeftName);
         frontRightDrive = hwMap.get(DcMotor.class, frontRightName);
@@ -93,6 +104,8 @@ public class HardwarePushbot
         carousel = hwMap.get(DcMotor.class, carouselName);
         armLift = hwMap.get(DcMotor.class, armLiftName);
         carSw = hwMap.get(DigitalChannel.class, carSwName);
+        imu = hwMap.get(BNO055IMU.class, "imu");
+        imu.initialize(imuParameters);
 
         // Set all motors to zero power
         frontLeftDrive.setPower(0);
@@ -118,5 +131,50 @@ public class HardwarePushbot
         frontRightDrive.setZeroPowerBehavior(behavior);
         backLeftDrive.setZeroPowerBehavior(behavior);
         backRightDrive.setZeroPowerBehavior(behavior);
+    }
+
+    public void setMoveMotors(double xi, double yi, double rxi) {
+        denominator = Math.max(Math.abs(yi) + Math.abs(xi) + Math.abs(rxi), 1);
+        frontLeftPower = (yi + xi + rxi) / denominator;
+        backLeftPower = (yi - xi + rxi) / denominator;
+        frontRightPower = (yi - xi - rxi) / denominator;
+        backRightPower = (yi + xi - rxi) / denominator;
+        frontRightDrive.setPower(frontRightPower);
+        frontLeftDrive.setPower(frontLeftPower);
+        backRightDrive.setPower(backRightPower);
+        backLeftDrive.setPower(backLeftPower);
+        x = xi;
+        y = yi;
+        rx = rxi;
+    }
+
+    public void debug(boolean deb, Telemetry tel) {
+        if (deb) {
+            tel.addData("Front Left", frontLeftDrive.getCurrentPosition() / tickPerRev);
+            tel.addData("Front Right", frontRightDrive.getCurrentPosition() / tickPerRev);
+            tel.addData("Back Left", backLeftDrive.getCurrentPosition() / tickPerRev);
+            tel.addData("Back Right", backRightDrive.getCurrentPosition() / tickPerRev);
+            tel.addData("Move Speed", speed);
+            tel.addData("Arm Lift Position: ", armLift.getCurrentPosition() / tickPerRev);
+            tel.addData("Move Angle (IMU):", gyroAngle);
+            tel.addData("Move Angle (THE):", rotationVel);
+            tel.addData("Move Angle (Error):", lastError);
+            tel.update();
+        }
+    }
+
+    public void updateHeading() {
+        rotationVel = 0;
+        gyroAngle = deadzone(imu.getAngularVelocity().xRotationRate, 10);
+
+        lastError = (rotationVel - gyroAngle) / 12.732395542215366;
+    }
+
+    public double deadzone(double input, double dead) {
+        if (input < dead && input > -dead) {
+            return 0.0;
+        } else {
+            return input;
+        }
     }
 }

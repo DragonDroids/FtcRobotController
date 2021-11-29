@@ -29,6 +29,8 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.control.PIDFController;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -38,13 +40,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.acmerobotics.roadrunner.*;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+
 @TeleOp(name="DD TeleOp", group="Linear Opmode")
 
 public class DDTeleOp extends LinearOpMode {
     HardwarePushbot robot = new HardwarePushbot();
     double maxSpeed = 1;
     double minSpeed = 0.5;
-    double speed = 0.5;
     boolean variableSpeed = true;
 
     @Override
@@ -74,9 +79,9 @@ public class DDTeleOp extends LinearOpMode {
 
         while (opModeIsActive()) {
             if (variableSpeed) {
-                speed = minSpeed + (gamepad1.right_trigger * (maxSpeed - minSpeed));
+                robot.speed = minSpeed + (gamepad1.right_trigger * (maxSpeed - minSpeed));
             } else {
-                speed = gamepad1.right_bumper ? maxSpeed : minSpeed;
+                robot.speed = gamepad1.right_bumper ? maxSpeed : minSpeed;
             }
 
             if (!robot.carSw.getState()) {
@@ -85,31 +90,16 @@ public class DDTeleOp extends LinearOpMode {
                 robot.carousel.setPower(0.0);
             }
 
-            double y = gamepad1.left_stick_y * speed; // Remember, this is reversed!
-            double x = -gamepad1.left_stick_x * 1.1 * speed; // Counteract imperfect strafing
-            double rx = -gamepad1.right_stick_x;
-
             // Find each motor powers
-            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-            double frontLeftPower = (y + x + rx) / denominator;
-            double backLeftPower = (y - x + rx) / denominator;
-            double frontRightPower = (y - x - rx) / denominator;
-            double backRightPower = (y + x - rx) / denominator;
+            double y = gamepad1.left_stick_y * robot.speed; // Remember, this is reversed!
+            double x = -gamepad1.left_stick_x * robot.speed; // Counteract imperfect strafing
+            double rx = -gamepad1.right_stick_x + robot.lastError;
 
-            // Set Motor Powers
-            robot.frontLeftDrive.setPower(frontLeftPower);
-            robot.backLeftDrive.setPower(backLeftPower);
-            robot.frontRightDrive.setPower(frontRightPower);
-            robot.backRightDrive.setPower(backRightPower);
+            robot.updateHeading();
 
-            // Return Motor Positions (Debugging)
-            telemetry.addData("Front Left", robot.frontLeftDrive.getCurrentPosition());
-            telemetry.addData("Front Right", robot.frontRightDrive.getCurrentPosition());
-            telemetry.addData("Back Left", robot.backLeftDrive.getCurrentPosition());
-            telemetry.addData("Back Right", robot.backRightDrive.getCurrentPosition());
-            telemetry.addData("Speed", speed);
-            telemetry.addData("Stuff: ", robot.armLift.getCurrentPosition());
-            telemetry.update();
+            robot.setMoveMotors(x, y, rx);
+
+            robot.debug(true, telemetry);
         }
     }
 }
