@@ -29,18 +29,17 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.roadrunner.control.PIDCoefficients;
-import com.acmerobotics.roadrunner.control.PIDFController;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 public class HardwarePushbot
 {
@@ -62,18 +61,14 @@ public class HardwarePushbot
     public String armLiftName = "armLift";
     public String carSwName = "carSw";
 
-    private double denominator;
-    public double frontLeftPower;
-    public double backLeftPower;
-    public double frontRightPower;
-    public double backRightPower;
     public double speed;
-    private double x;
-    private double y;
-    private double rx;
-    private double rotationVel;
-    private double gyroAngle;
-    public double lastError;
+    public double leftPower;
+    public double rightPower;
+    public boolean move = false;
+
+    private double maxSpeed = 1;
+    private double minSpeed = 0.5;
+    private boolean variableSpeed = true;
 
     public double tickPerRev = 537.7;
 
@@ -124,6 +119,12 @@ public class HardwarePushbot
         // Set reverse for NeverRest Motors
         frontRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        // Set's the drivetrain's motors to float when the power is set to 0
+        setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        // Set's the motor to brake when the motor's power is set to 0
+        armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
@@ -133,19 +134,11 @@ public class HardwarePushbot
         backRightDrive.setZeroPowerBehavior(behavior);
     }
 
-    public void setMoveMotors(double xi, double yi, double rxi) {
-        denominator = Math.max(Math.abs(yi) + Math.abs(xi) + Math.abs(rxi), 1);
-        frontLeftPower = (yi + xi + rxi) / denominator;
-        backLeftPower = (yi - xi + rxi) / denominator;
-        frontRightPower = (yi - xi - rxi) / denominator;
-        backRightPower = (yi + xi - rxi) / denominator;
-        frontRightDrive.setPower(frontRightPower);
-        frontLeftDrive.setPower(frontLeftPower);
-        backRightDrive.setPower(backRightPower);
-        backLeftDrive.setPower(backLeftPower);
-        x = xi;
-        y = yi;
-        rx = rxi;
+    public void setMoveMotors() {
+        frontRightDrive.setPower(rightPower);
+        frontLeftDrive.setPower(leftPower);
+        backRightDrive.setPower(rightPower);
+        backLeftDrive.setPower(leftPower);
     }
 
     public void debug(boolean deb, Telemetry tel) {
@@ -156,18 +149,27 @@ public class HardwarePushbot
             tel.addData("Back Right", backRightDrive.getCurrentPosition() / tickPerRev);
             tel.addData("Move Speed", speed);
             tel.addData("Arm Lift Position: ", armLift.getCurrentPosition() / tickPerRev);
-            tel.addData("Move Angle (IMU):", gyroAngle);
-            tel.addData("Move Angle (THE):", rotationVel);
-            tel.addData("Move Angle (Error):", lastError);
+//            tel.addData("Move Angle (IMU):", gyroAngle);
+//            tel.addData("Move Angle (THE):", rotation * 12.732395542215366);
+//            tel.addData("Move Angle (Error):", rotation * 12.732395542215366 - imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).firstAngle);
+//            tel.addData("Move Rotational (RX):", rx);
+            tel.addData("Movement Pause: ", move);
             tel.update();
         }
     }
 
-    public void updateHeading() {
-        rotationVel = 0;
-        gyroAngle = deadzone(imu.getAngularVelocity().xRotationRate, 10);
+//    public void updateHeading() {
+//        PIDController controller = new PIDController(10, 0, 25);
+//        controller.setSetPoint(rotation * 12.732395542215366);
+//
+//    }
 
-        lastError = (rotationVel - gyroAngle) / 12.732395542215366;
+    public void getMovementSpeed(Gamepad gamepad) {
+        if (variableSpeed) {
+            speed = minSpeed + (gamepad.right_trigger * (maxSpeed - minSpeed));
+        } else {
+            speed = gamepad.right_bumper ? maxSpeed : minSpeed;
+        }
     }
 
     public double deadzone(double input, double dead) {
@@ -176,5 +178,13 @@ public class HardwarePushbot
         } else {
             return input;
         }
+    }
+
+    //////////////////////////////////////////////////////
+
+    public void resetArm() {
+        armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armLift.setTargetPosition((int) Math.round((10 / 360) * 537.7));
+        armLift.setPower(0.4);
     }
 }

@@ -29,76 +29,73 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.roadrunner.control.PIDCoefficients;
-import com.acmerobotics.roadrunner.control.PIDFController;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-import com.acmerobotics.roadrunner.*;
-
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 @TeleOp(name="DD TeleOp", group="Linear Opmode")
 
 public class DDTeleOp extends LinearOpMode {
+    // Declares the robot
     HardwarePushbot robot = new HardwarePushbot();
-    double maxSpeed = 1;
-    double minSpeed = 0.5;
-    boolean variableSpeed = true;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        // Declare our motors
         // Make sure your ID's match your configuration
         robot.init(hardwareMap);
 
-        // Reverse the right side motors
-        // Reverse left motors if you are using NeveRests
-        robot.frontRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.backRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        robot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
         /*
         This code is to stabilize the arm prior to the run.
-        */
-//        robot.armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        robot.armLift.setTargetPosition((int) Math.round((10 / 360) * 537.7));
-//        robot.armLift.setPower(0.4);
-        //sleep(100);
 
+        robot.resetArm();
+        */
+
+        // Waits for the start button to be pressed
         waitForStart();
 
+        // Checks if stop is pressed by user
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            if (variableSpeed) {
-                robot.speed = minSpeed + (gamepad1.right_trigger * (maxSpeed - minSpeed));
+            // Check if variable speed is required
+            robot.getMovementSpeed(gamepad1);
+
+            // Move arm lift if operator pressed the right trigger or left trigger
+            if (gamepad2.right_trigger != 0) {
+                robot.armLift.setPower(gamepad2.right_trigger);
+            } else if (gamepad2.left_trigger != 0) {
+                robot.armLift.setPower(-gamepad2.left_trigger);
             } else {
-                robot.speed = gamepad1.right_bumper ? maxSpeed : minSpeed;
+                robot.armLift.setPower(0.0);
             }
 
+            // Add button so that the robot can apply it's "brakes"
+            if (gamepad1.right_bumper) {
+                robot.move = !robot.move;
+            }
+
+            // Take in the left and right powers for the motors through joystick
+            double leftPower = gamepad1.left_stick_y * robot.speed;
+            double rightPower = gamepad1.right_stick_y * robot.speed;
+
+            // Check if the robot has hit the carousel and if so spin
             if (!robot.carSw.getState()) {
                 robot.carousel.setPower(-0.5);
             } else {
                 robot.carousel.setPower(0.0);
             }
 
-            // Find each motor powers
-            double y = gamepad1.left_stick_y * robot.speed; // Remember, this is reversed!
-            double x = -gamepad1.left_stick_x * robot.speed; // Counteract imperfect strafing
-            double rx = -gamepad1.right_stick_x + robot.lastError;
+            // Move the robot according to the joystick powers
+            if (robot.move) {
+                robot.leftPower = leftPower;
+                robot.rightPower = rightPower;
+            } else {
+                robot.leftPower = 0;
+                robot.rightPower = 0;
+            }
 
-            robot.updateHeading();
-
-            robot.setMoveMotors(x, y, rx);
-
+            // Adds data to telemetry
             robot.debug(true, telemetry);
         }
     }
