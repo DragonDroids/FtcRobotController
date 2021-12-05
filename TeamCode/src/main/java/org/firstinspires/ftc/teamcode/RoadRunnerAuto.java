@@ -33,10 +33,6 @@ public class RoadRunnerAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         RoadRunnerAutoHardware drive = new RoadRunnerAutoHardware(hardwareMap);
 
-        Pose2d startPose = new Pose2d(-DISTANCE / 2, -DISTANCE / 2, 0);
-
-        drive.setPoseEstimate(startPose);
-
         // Declare positions variables
         char positionR = 'C';
         String robotPositionR = "RL";
@@ -99,14 +95,17 @@ public class RoadRunnerAuto extends LinearOpMode {
         double shippingDist = shippingDistCalc;
         int pos = position;
 
+        drive.setPoseEstimate(startPos);
+
         telemetry.addData("Ready", "to start");
+        telemetry.update();
 
         waitForStart();
 
         if (isStopRequested()) return;
 
         while (!isStopRequested()) {
-            TrajectorySequence trajSeq = drive.trajectorySequenceBuilder(startPose)
+            TrajectorySequence trajSeq = drive.trajectorySequenceBuilder(startPos)
                     // Move away from wall so we don't crash when turning
                     .forward(5)
                     // Turn to the right angle so that we are facing the Team Element
