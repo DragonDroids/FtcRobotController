@@ -29,7 +29,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -37,9 +36,6 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 public class HardwarePushbot
 {
@@ -66,8 +62,8 @@ public class HardwarePushbot
     public double rightPower;
     public boolean move = false;
 
-    private double maxSpeed = 1;
-    private double minSpeed = 0.5;
+    private final double maxSpeed = 1;
+    private final double minSpeed = 0.5;
     private boolean variableSpeed = true;
 
     public double tickPerRev = 537.7;
@@ -158,11 +154,13 @@ public class HardwarePushbot
         }
     }
 
-//    public void updateHeading() {
-//        PIDController controller = new PIDController(10, 0, 25);
-//        controller.setSetPoint(rotation * 12.732395542215366);
-//
-//    }
+    /*
+    public void updateHeading() {
+        PIDController controller = new PIDController(10, 0, 25);
+        controller.setSetPoint(rotation * 12.732395542215366);
+
+    }
+     */
 
     public void getMovementSpeed(Gamepad gamepad) {
         if (variableSpeed) {
