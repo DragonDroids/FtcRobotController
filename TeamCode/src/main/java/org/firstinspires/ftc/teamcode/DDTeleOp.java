@@ -74,8 +74,8 @@ public class DDTeleOp extends LinearOpMode {
             }
 
             // Take in the left and right powers for the motors through joystick
-            double leftPower = gamepad1.left_stick_y * robot.speed;
-            double rightPower = gamepad1.right_stick_y * robot.speed;
+            double leftPower = -gamepad1.left_stick_y * robot.speed;
+            double rightPower = -gamepad1.right_stick_y * robot.speed;
 
             // Check if the robot has hit the carousel and if so spin
             if (!robot.carSw.getState()) {

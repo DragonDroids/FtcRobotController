@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode;
 
 import androidx.annotation.NonNull;
 
@@ -51,7 +51,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
  * Simple tank drive hardware implementation for REV hardware.
  */
 @Config
-public class SampleTankDrive extends TankDrive {
+public class RoadRunnerAutoHardware extends TankDrive {
     public static PIDCoefficients AXIAL_PID = new PIDCoefficients(0, 0, 0);
     public static PIDCoefficients CROSS_TRACK_PID = new PIDCoefficients(0, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(1.55, 0, 0);
@@ -78,7 +78,7 @@ public class SampleTankDrive extends TankDrive {
     private String backLeftName = "backLeft";
     private String backRightName = "backRight";
 
-    public SampleTankDrive(HardwareMap hardwareMap) {
+    public RoadRunnerAutoHardware(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH);
 
         follower = new TankPIDVAFollower(AXIAL_PID, CROSS_TRACK_PID,
