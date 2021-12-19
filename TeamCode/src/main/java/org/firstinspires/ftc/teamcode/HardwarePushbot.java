@@ -35,6 +35,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class HardwarePushbot
@@ -48,6 +50,7 @@ public class HardwarePushbot
     public DcMotor  armLift = null;
     public DigitalChannel carSw = null;
     public BNO055IMU imu = null;
+    public Servo armGripper = null;
 
     public String frontLeftName = "frontLeft";
     public String frontRightName = "frontRight";
@@ -56,6 +59,7 @@ public class HardwarePushbot
     public String carouselName = "carousel";
     public String armLiftName = "armLift";
     public String carSwName = "carSw";
+    public String armGripperName = "armClamp";
 
     public double speed;
     public double leftPower;
@@ -64,7 +68,7 @@ public class HardwarePushbot
 
     private final double maxSpeed = 1;
     private final double minSpeed = 0.5;
-    private boolean variableSpeed = true;
+    private final boolean variableSpeed = true;
 
     public double tickPerRev = 537.7;
 
@@ -97,19 +101,20 @@ public class HardwarePushbot
         carSw = hwMap.get(DigitalChannel.class, carSwName);
         imu = hwMap.get(BNO055IMU.class, "imu");
         imu.initialize(imuParameters);
+        armGripper = hwMap.get(Servo.class, armGripperName);
 
         // Set all motors to zero power
         frontLeftDrive.setPower(0);
         frontRightDrive.setPower(0);
         backLeftDrive.setPower(0);
         backRightDrive.setPower(0);
-
         // Set all motors to run using encoders.
-        frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
-        frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
-        backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
-        backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
-        armLift.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
+        frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armLift.setTargetPosition(0);
+        armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         carSw.setMode(DigitalChannel.Mode.INPUT);
 
         // Set reverse for NeverRest Motors
@@ -137,30 +142,17 @@ public class HardwarePushbot
         backLeftDrive.setPower(leftPower);
     }
 
-    public void debug(boolean deb, Telemetry tel) {
+    public void debug(boolean deb, Telemetry tel, Gamepad gamepad1, Gamepad gamepad2) {
         if (deb) {
             tel.addData("Front Left", frontLeftDrive.getCurrentPosition() / tickPerRev);
             tel.addData("Front Right", frontRightDrive.getCurrentPosition() / tickPerRev);
             tel.addData("Back Left", backLeftDrive.getCurrentPosition() / tickPerRev);
             tel.addData("Back Right", backRightDrive.getCurrentPosition() / tickPerRev);
             tel.addData("Move Speed", speed);
-            tel.addData("Arm Lift Position: ", armLift.getCurrentPosition() / tickPerRev);
-//            tel.addData("Move Angle (IMU):", gyroAngle);
-//            tel.addData("Move Angle (THE):", rotation * 12.732395542215366);
-//            tel.addData("Move Angle (Error):", rotation * 12.732395542215366 - imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).firstAngle);
-//            tel.addData("Move Rotational (RX):", rx);
-            tel.addData("Movement Pause: ", move);
+            tel.addData("Arm Lift Position: ", armLift.getCurrentPosition() / 2786.2);
             tel.update();
         }
     }
-
-    /*
-    public void updateHeading() {
-        PIDController controller = new PIDController(10, 0, 25);
-        controller.setSetPoint(rotation * 12.732395542215366);
-
-    }
-     */
 
     public void getMovementSpeed(Gamepad gamepad) {
         if (variableSpeed) {
@@ -177,8 +169,6 @@ public class HardwarePushbot
             return input;
         }
     }
-
-    //////////////////////////////////////////////////////
 
     public void resetArm() {
         armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

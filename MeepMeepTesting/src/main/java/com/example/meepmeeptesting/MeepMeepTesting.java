@@ -14,7 +14,7 @@ public class MeepMeepTesting {
         //System.setProperty("sun.java2d.opengl", "true");
 
         // Declare positions variables
-        char positionR = 'C';
+        char positionR = 'L';
         String robotPositionR = "RL";
 
         // Set path values
@@ -28,6 +28,7 @@ public class MeepMeepTesting {
         double angleWidth = 21;
         double shippingAngleTurnCalc = 0;
         double shippingDistCalc = 0.0;
+        double elementTurnCalc = 0.0;
 
         Pose2d startPos;
         int s = 1;
@@ -42,7 +43,7 @@ public class MeepMeepTesting {
                 position *= -1;
                 break;
             case 2:
-                startPos = new Pose2d(-35, -61.75, Math.toRadians(90));
+                startPos = new Pose2d(-42, -61.75, Math.toRadians(90));
                 break;
             case 3:
                 startPos = new Pose2d(11, -61.75, Math.toRadians(90));
@@ -58,21 +59,25 @@ public class MeepMeepTesting {
 
         switch (position) {
             case 1:
-                shippingAngleTurnCalc = -79.408;
+                shippingAngleTurnCalc = -68;
                 shippingDistCalc = 18.0;
+                elementTurnCalc = 5;
                 break;
             case 0:
-                shippingAngleTurnCalc = -50.0;
-                shippingDistCalc = 14.0;
+                shippingAngleTurnCalc = -62.0;
+                shippingDistCalc = 20.0;
+                elementTurnCalc = 5;
                 break;
             default:
-                shippingAngleTurnCalc = -20.0;
-                shippingDistCalc = 11.0;
+                shippingAngleTurnCalc = -36.0;
+                shippingDistCalc = 15.0;
+                elementTurnCalc = -17;
                 break;
         }
 
         double shippingAngleTurn = shippingAngleTurnCalc;
         double shippingDist = shippingDistCalc;
+        double elementTurn = elementTurnCalc;
         int pos = position;
 
         // Declare a MeepMeep instance
@@ -92,7 +97,7 @@ public class MeepMeepTesting {
                                 // Move away from wall so we don't crash when turning
                                 .forward(5)
                                 // Turn to the right angle so that we are facing the Team Element
-                                .turn(sign * Math.toRadians(pos * angleWidth))
+                                .turn(sign * Math.toRadians(elementTurn))
                                 // Move towards Team Element
                                 .forward(12 + Math.abs(pos) * 2)
                                 // To Do: Add pickup of Team Element

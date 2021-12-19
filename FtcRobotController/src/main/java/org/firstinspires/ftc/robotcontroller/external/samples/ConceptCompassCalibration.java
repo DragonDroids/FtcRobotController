@@ -102,7 +102,7 @@ public class ConceptCompassCalibration extends LinearOpMode {
             idle();
         }
 
-        // Stop all motors and turn off claibration
+        // Stop all motors and turn off calibration
         robot.leftDrive.setPower(0);
         robot.rightDrive.setPower(0);
         compass.setMode(CompassSensor.CompassMode.MEASUREMENT_MODE);

@@ -31,12 +31,26 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 @TeleOp(name="DD TeleOp", group="Linear Opmode")
 
 public class DDTeleOp extends LinearOpMode {
     // Declares the robot
     HardwarePushbot robot = new HardwarePushbot();
+
+    boolean gripperIsHeld = false;
+    boolean gripperResult = false;
+
+    int[] positions = {
+            2731,// high
+            3283, // middle
+            3692, // low
+            0,  // reset
+            500 // transportation mode
+    };
+
+    double targetArmPos = 15;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -55,48 +69,104 @@ public class DDTeleOp extends LinearOpMode {
         // Checks if stop is pressed by user
         if (isStopRequested()) return;
 
+        int armTarget = 0;
+        double armSpeed = 0;
+        double armSpeedMove = 0.75;
+
         while (opModeIsActive()) {
             // Check if variable speed is required
             robot.getMovementSpeed(gamepad1);
 
-            // Move arm lift if operator pressed the right trigger or left trigger
-            if (gamepad2.right_trigger != 0) {
-                robot.armLift.setPower(gamepad2.right_trigger);
-            } else if (gamepad2.left_trigger != 0) {
-                robot.armLift.setPower(-gamepad2.left_trigger);
-            } else {
-                robot.armLift.setPower(0.0);
-            }
-
-            // Add button so that the robot can apply it's "brakes"
-            if (gamepad1.right_bumper) {
-                robot.move = !robot.move;
+            // Move arm lift to target position
+            if (gamepad2.y){
+                armTarget = positions[0];
+                armSpeed = armSpeedMove;
+                robot.armLift.setTargetPosition(armTarget);
+                robot.armLift.setPower(armSpeed);
+            } else if (gamepad2.b) {
+                armTarget = positions[1];
+                armSpeed = armSpeedMove;
+                robot.armLift.setTargetPosition(armTarget);
+                robot.armLift.setPower(armSpeed);
+            } else if (gamepad2.a) {
+                armTarget = positions[2];
+                armSpeed = armSpeedMove;
+                robot.armLift.setTargetPosition(armTarget);
+                robot.armLift.setPower(armSpeed);
+            } else if (gamepad2.x) {
+                armTarget = positions[3];
+                armSpeed = armSpeedMove;
+                robot.armLift.setTargetPosition(armTarget);
+                robot.armLift.setPower(armSpeed);
+            } else if (gamepad2.start) {
+                armTarget = positions[4];
+                armSpeed = armSpeedMove;
+                robot.armLift.setTargetPosition(armTarget);
+                robot.armLift.setPower(armSpeed);
             }
 
             // Take in the left and right powers for the motors through joystick
-            double leftPower = -gamepad1.left_stick_y * robot.speed;
-            double rightPower = -gamepad1.right_stick_y * robot.speed;
+            double leftPower = (-gamepad1.left_stick_y + gamepad1.left_stick_x) * robot.speed;
+            double rightPower = (-gamepad1.left_stick_y - gamepad1.left_stick_x) * robot.speed;
 
-            // Check if the robot has hit the carousel and if so spin
-            if (!robot.carSw.getState()) {
+            // Check if the robot has hit the carousel and if so, spin
+//            if (!robot.carSw.getState()) {
+//                robot.carousel.setPower(0.5);
+//            } else {
+//                robot.carousel.setPower(0.0);
+//            }
+
+            if (gamepad1.right_stick_x > 0) {
                 robot.carousel.setPower(-0.5);
+            } else if (gamepad1.right_stick_x < 0) {
+                robot.carousel.setPower(0.5);
             } else {
                 robot.carousel.setPower(0.0);
             }
 
-            // Move the robot according to the joystick powers
-            if (robot.move) {
-                robot.leftPower = leftPower;
-                robot.rightPower = rightPower;
-            } else {
-                robot.leftPower = 0;
-                robot.rightPower = 0;
+            // Toggle arm gripper
+//            if (gamepad2.left_bumper && !gripperIsHeld) {
+//                gripperIsHeld = true;
+//                gripperResult = !gripperResult;
+//                robot.armLift.;
+//            } else if (!gamepad2.left_bumper) {
+//                gripperIsHeld = false;
+//            }
+            //Right button to open claw
+            //Left button to close claw
+            if (gamepad2.right_bumper) {
+                robot.armGripper.setPosition(0.0);
+            } else if (gamepad2.left_bumper) {
+                robot.armGripper.setPosition(1.0);
             }
+
+            if (gamepad2.right_trigger > 0.1) {
+                armTarget = robot.armLift.getCurrentPosition() + 10;
+                armSpeed = 0.35;
+                robot.armLift.setTargetPosition(armTarget);
+                robot.armLift.setPower(armSpeed);
+            } else if (gamepad2.left_trigger > 0.1) {
+                armTarget = robot.armLift.getCurrentPosition() - 10;
+                armSpeed = 0.35;
+                robot.armLift.setTargetPosition(armTarget);
+                robot.armLift.setPower(armSpeed);
+            }
+
+            if (gamepad1.back) {
+                robot.armLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                robot.armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+
+//            robot.armGripper.setPosition(gripperResult ? 1.0 : 0.0);
+
+            // Move the robot according to the joystick powers
+            robot.leftPower = leftPower;
+            robot.rightPower = rightPower;
 
             robot.setMoveMotors();
 
             // Adds data to telemetry
-            robot.debug(true, telemetry);
+            robot.debug(true, telemetry, gamepad1, gamepad2);
         }
     }
 }

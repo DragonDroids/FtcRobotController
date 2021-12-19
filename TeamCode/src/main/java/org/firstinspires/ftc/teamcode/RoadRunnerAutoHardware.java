@@ -24,6 +24,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
@@ -77,6 +78,9 @@ public class RoadRunnerAutoHardware extends TankDrive {
     private String frontRightName = "frontRight";
     private String backLeftName = "backLeft";
     private String backRightName = "backRight";
+
+    public Servo armClamp;
+    public DcMotor armLift;
 
     public RoadRunnerAutoHardware(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH);
@@ -136,6 +140,11 @@ public class RoadRunnerAutoHardware extends TankDrive {
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(follower, HEADING_PID);
+        armClamp = hardwareMap.get(Servo.class, "armClamp");
+        armLift = hardwareMap.get(DcMotor.class, "armLift");
+        armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armLift.setTargetPosition(0);
+        armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
@@ -324,5 +333,13 @@ public class RoadRunnerAutoHardware extends TankDrive {
 
     public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
         return new ProfileAccelerationConstraint(maxAccel);
+    }
+
+    public void closeArm() {
+        armClamp.setPosition(0);
+    }
+
+    public void openArm() {
+        armClamp.setPosition(1);
     }
 }
