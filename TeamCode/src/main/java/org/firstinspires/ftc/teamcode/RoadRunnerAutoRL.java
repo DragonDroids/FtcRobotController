@@ -401,12 +401,17 @@ public class RoadRunnerAutoRL extends LinearOpMode {
 
 
 
-    private void turnDegrees(double degrees) {
-        double ticksToTravel = (degrees / 360 * (Math.PI * 17.5)) / 11.8737122661 * 537.7;
-        if (degrees > 0) {
-
-        } else if (degrees < 0) {
-
-        }
+    private void turnDegrees(double degrees, double speed) {
+        double ticksToTravel = degrees * 6.91574444491;
+        double leftPower = -speed;
+        double rightPower = -speed;
+        drive.frontRightDrive.setTargetPosition(drive.frontRightDrive.getCurrentPosition() + ticksToTravel);
+        drive.frontRightDrive.setPower(rightPower);
+        drive.frontLeftDrive.setTargetPosition(drive.frontLeftDrive.getCurrentPosition() - ticksToTravel);
+        drive.frontLeftDrive.setPower(leftPower);
+        drive.backRightDrive.setTargetPosition(drive.backRightDrive.getCurrentPosition() + ticksToTravel);
+        drive.backRightDrive.setPower(rightPower);
+        drive.backLeftDrive.setTargetPosition(drive.backLeftDrive.getCurrentPosition() - ticksToTravel);
+        drive.backLeftDrive.setPower(leftPower);
     }
 }
