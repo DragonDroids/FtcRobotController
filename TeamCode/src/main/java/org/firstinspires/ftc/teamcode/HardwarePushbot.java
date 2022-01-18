@@ -38,6 +38,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 public class HardwarePushbot
 {
@@ -51,6 +54,7 @@ public class HardwarePushbot
     public DigitalChannel carSw = null;
     public BNO055IMU imu = null;
     public Servo armGripper = null;
+    public DcMotor  motorTest = null;
 
     public String frontLeftName = "frontLeft";
     public String frontRightName = "frontRight";
@@ -60,6 +64,7 @@ public class HardwarePushbot
     public String armLiftName = "armLift";
     public String carSwName = "carSw";
     public String armGripperName = "armClamp";
+    public String motorTestName = "motorTest";
 
     public double speed;
     public double leftPower;
@@ -102,6 +107,7 @@ public class HardwarePushbot
         imu = hwMap.get(BNO055IMU.class, "imu");
         imu.initialize(imuParameters);
         armGripper = hwMap.get(Servo.class, armGripperName);
+        motorTest = hwMap.get(DcMotor.class, motorTestName);
 
         // Set all motors to zero power
         frontLeftDrive.setPower(0);
@@ -113,6 +119,7 @@ public class HardwarePushbot
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLift.setTargetPosition(0);
         armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         carSw.setMode(DigitalChannel.Mode.INPUT);
@@ -149,7 +156,7 @@ public class HardwarePushbot
             tel.addData("Back Left", backLeftDrive.getCurrentPosition() / tickPerRev);
             tel.addData("Back Right", backRightDrive.getCurrentPosition() / tickPerRev);
             tel.addData("Move Speed", speed);
-            tel.addData("Arm Lift Position: ", armLift.getCurrentPosition() / 2786.2);
+            tel.addData("Viper Slide Position: ", armLift.getCurrentPosition());
             tel.update();
         }
     }
@@ -174,5 +181,16 @@ public class HardwarePushbot
         armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armLift.setTargetPosition((int) Math.round((10 / 360) * 537.7));
         armLift.setPower(0.4);
+    }
+
+    public double getAngle() {
+        return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+    }
+
+    public boolean isMoving(double err) {
+        return deadzone(frontLeftDrive.getTargetPosition() - frontLeftDrive.getCurrentPosition(), err) != 0 &&
+                deadzone(frontRightDrive.getTargetPosition() - frontRightDrive.getCurrentPosition(), err) != 0 &&
+                deadzone(backLeftDrive.getTargetPosition() - backLeftDrive.getCurrentPosition(), err) != 0 &&
+                deadzone(backRightDrive.getTargetPosition() - backRightDrive.getCurrentPosition(), err) != 0;
     }
 }

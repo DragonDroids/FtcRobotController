@@ -274,12 +274,11 @@ public class RoadRunnerAutoRR extends LinearOpMode {
             case "RR": {
                 int dist = 47;
                 int turn = 105;
-                int dist2 = 37;
+                int dist2 = 90;
                 TrajectorySequence traj0 = drive.trajectorySequenceBuilder(new Pose2d(0, 0, 0))
                         .forward(dist)
                         .turn(-Math.toRadians(turn))
                         .forward(dist2)
-                        .turn(-10)
                         .build();
                 drive.armLift.setPower(0.2);
                 drive.armLift.setTargetPosition(500);

@@ -402,7 +402,7 @@ public class RoadRunnerAutoRL extends LinearOpMode {
 
 
     private void turnDegrees(double degrees, double speed) {
-        double ticksToTravel = degrees * 6.91574444491;
+        int ticksToTravel = (int) (((int) degrees) * 6.91574444491);
         double leftPower = -speed;
         double rightPower = -speed;
         drive.frontRightDrive.setTargetPosition(drive.frontRightDrive.getCurrentPosition() + ticksToTravel);

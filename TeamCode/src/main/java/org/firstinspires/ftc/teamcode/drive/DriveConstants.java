@@ -34,7 +34,7 @@ public class DriveConstants {
      * from DriveVelocityPIDTuner.
      */
     public static final boolean RUN_USING_ENCODER = true;
-    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(15, 14, 0, 40);
+    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(20,0,5,13.65);
 
     /*
      * These are physical constants that can be determined from your robot (including the track
@@ -44,9 +44,9 @@ public class DriveConstants {
      * angular distances although most angular parameters are wrapped in Math.toRadians() for
      * convenience. Make sure to exclude any gear ratio included in MOTOR_CONFIG from GEAR_RATIO.
      */
-    public static double WHEEL_RADIUS = 3.77953; // in
-    public static double GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 30.9; // in
+    public static double WHEEL_RADIUS = 1.889764; // in
+    public static double GEAR_RATIO = 1.01137647027; // output (wheel) speed / input (motor) speed
+    public static double TRACK_WIDTH = 15.86; // in
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -96,12 +96,14 @@ public class DriveConstants {
      *
      * A documented case of a similar error which served as an impetus for this reasoning can be found here:
      * https://github.com/acmerobotics/road-runner-quickstart/issues/91
-
+Telemetry
+Max Velocity: 42.40620499584615
+Voltage Compensated kF: 18.327618446180555
      */
     public static double MAX_VEL = 52.88953050960229;
     public static double MAX_ACCEL = 90;
-    public static double MAX_ANG_VEL = Math.toRadians(294.6640089244234);
-    public static double MAX_ANG_ACCEL = Math.toRadians(294.6640089244234);
+    public static double MAX_ANG_VEL = Math.toRadians(284);
+    public static double MAX_ANG_ACCEL = Math.toRadians(284);
 
 
     public static double encoderTicksToInches(double ticks) {

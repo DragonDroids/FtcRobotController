@@ -39,18 +39,12 @@ public class DDTeleOp extends LinearOpMode {
     // Declares the robot
     HardwarePushbot robot = new HardwarePushbot();
 
-    boolean gripperIsHeld = false;
-    boolean gripperResult = false;
-
     int[] positions = {
-            2731,// high
-            3283, // middle
-            3692, // low
-            0,  // reset
-            500 // transportation mode
+            -545,// high
+            -400, // middle
+            0, // reset
     };
 
-    double targetArmPos = 15;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -69,9 +63,10 @@ public class DDTeleOp extends LinearOpMode {
         // Checks if stop is pressed by user
         if (isStopRequested()) return;
 
-        int armTarget = 0;
-        double armSpeed = 0;
+        int armTarget;
+        double armSpeed;
         double armSpeedMove = 0.75;
+        double carouselSpeed = 0.65;
 
         while (opModeIsActive()) {
             // Check if variable speed is required
@@ -93,51 +88,27 @@ public class DDTeleOp extends LinearOpMode {
                 armSpeed = armSpeedMove;
                 robot.armLift.setTargetPosition(armTarget);
                 robot.armLift.setPower(armSpeed);
-            } else if (gamepad2.x) {
-                armTarget = positions[3];
-                armSpeed = armSpeedMove;
-                robot.armLift.setTargetPosition(armTarget);
-                robot.armLift.setPower(armSpeed);
-            } else if (gamepad2.start) {
-                armTarget = positions[4];
-                armSpeed = armSpeedMove;
-                robot.armLift.setTargetPosition(armTarget);
-                robot.armLift.setPower(armSpeed);
+                robot.armGripper.setPosition(1.0);
+            }
+
+            if (gamepad1.a) {
+                robot.motorTest.setPower(1);
+            } else if (gamepad1.b) {
+                robot.motorTest.setPower(-1);
+            } else {
+                robot.motorTest.setPower(0);
             }
 
             // Take in the left and right powers for the motors through joystick
             double leftPower = (-gamepad1.left_stick_y + gamepad1.left_stick_x) * robot.speed;
             double rightPower = (-gamepad1.left_stick_y - gamepad1.left_stick_x) * robot.speed;
 
-            // Check if the robot has hit the carousel and if so, spin
-//            if (!robot.carSw.getState()) {
-//                robot.carousel.setPower(0.5);
-//            } else {
-//                robot.carousel.setPower(0.0);
-//            }
-
             if (gamepad1.right_stick_x > 0) {
-                robot.carousel.setPower(-0.5);
+                robot.carousel.setPower(-carouselSpeed);
             } else if (gamepad1.right_stick_x < 0) {
-                robot.carousel.setPower(0.5);
+                robot.carousel.setPower(carouselSpeed);
             } else {
                 robot.carousel.setPower(0.0);
-            }
-
-            // Toggle arm gripper
-//            if (gamepad2.left_bumper && !gripperIsHeld) {
-//                gripperIsHeld = true;
-//                gripperResult = !gripperResult;
-//                robot.armLift.;
-//            } else if (!gamepad2.left_bumper) {
-//                gripperIsHeld = false;
-//            }
-            //Right button to open claw
-            //Left button to close claw
-            if (gamepad2.right_bumper) {
-                robot.armGripper.setPosition(0.0);
-            } else if (gamepad2.left_bumper) {
-                robot.armGripper.setPosition(1.0);
             }
 
             if (gamepad2.right_trigger > 0.1) {
@@ -150,6 +121,12 @@ public class DDTeleOp extends LinearOpMode {
                 armSpeed = 0.35;
                 robot.armLift.setTargetPosition(armTarget);
                 robot.armLift.setPower(armSpeed);
+            }
+
+            if (gamepad2.right_bumper) {
+                robot.armGripper.setPosition(0.0);
+            } else if (gamepad2.left_bumper) {
+                robot.armGripper.setPosition(1.0);
             }
 
             if (gamepad1.back) {
