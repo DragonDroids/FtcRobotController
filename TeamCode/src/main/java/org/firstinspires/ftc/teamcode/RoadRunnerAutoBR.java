@@ -40,12 +40,12 @@ import java.util.List;
 
 @Autonomous(group = "drive")
 public class RoadRunnerAutoBR extends LinearOpMode {
-    public static double ANGLETURN = 19;
-    public Double[] turnValues = {
-            19.0,
-            -15.0,
-            0.0,
+    public int[] armPositions = {
+            0,// bottom
+            -400, // middle
+            -545, // high
     };
+
     /*
     TensorFlow Stuff.
      */
@@ -114,7 +114,19 @@ public class RoadRunnerAutoBR extends LinearOpMode {
 
         TrajectorySequence trajectorySequence = drive.trajectorySequenceBuilder(new Pose2d(12,61,Math.toRadians(270)))
                 .forward(6)
-//                .splineTo(new Vector2d())
+                .turn(Math.toRadians(156))
+                .back(12)
+                .addDisplacementMarker(() -> {
+                    drive.armLift.setTargetPosition(armPositions[index]);
+                    drive.armLift.setPower(0.75);
+                    while (drive.armLift.isBusy() && opModeIsActive()) {}
+                    drive.armClamp.setPosition(0);
+                })
+                .waitSeconds(0.5)
+                .addDisplacementMarker(() -> {
+                    drive.armLift.setTargetPosition(0);
+                    drive.armClamp.setPosition(1);
+                })
                 .build();
 
         drive.followTrajectorySequence(trajectorySequence);

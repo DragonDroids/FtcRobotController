@@ -41,6 +41,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 public class HardwarePushbot
 {
@@ -157,6 +158,7 @@ public class HardwarePushbot
             tel.addData("Back Right", backRightDrive.getCurrentPosition() / tickPerRev);
             tel.addData("Move Speed", speed);
             tel.addData("Viper Slide Position: ", armLift.getCurrentPosition());
+            tel.addData("Current Robot Angle: ", getAngle());
             tel.update();
         }
     }
