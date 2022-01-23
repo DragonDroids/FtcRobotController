@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import java.util.Arrays;
 
 @Autonomous(name="TESTMOTOR")
-
+@Disabled
 public class RevCoreMotorSpeedTest extends LinearOpMode {
     private HardwarePushbot drive = new HardwarePushbot();
     public void runOpMode() throws InterruptedException {

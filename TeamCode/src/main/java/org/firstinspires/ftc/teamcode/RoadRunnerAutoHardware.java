@@ -79,8 +79,9 @@ public class RoadRunnerAutoHardware extends TankDrive {
     private String backLeftName = "backLeft";
     private String backRightName = "backRight";
 
-    public Servo armClamp;
-    public DcMotor armLift;
+    public Servo armClamp = null;
+    public DcMotor armLift = null;
+    public DcMotor carouselSpinner = null;
 
     public RoadRunnerAutoHardware(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH);
@@ -145,6 +146,9 @@ public class RoadRunnerAutoHardware extends TankDrive {
         armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armLift.setTargetPosition(0);
         armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armClamp.setPosition(0.5);
+        carouselSpinner = hardwareMap.get(DcMotor.class, "carousel");
+        carouselSpinner.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {

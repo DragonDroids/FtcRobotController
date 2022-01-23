@@ -54,6 +54,7 @@ public class HardwarePushbot
     public DcMotor  armLift = null;
     public DigitalChannel carSw = null;
     public BNO055IMU imu = null;
+    public BNO055IMU.Parameters imuParameters = new BNO055IMU.Parameters();
     public Servo armGripper = null;
     public DcMotor  motorTest = null;
 
@@ -90,7 +91,6 @@ public class HardwarePushbot
         hwMap = ahwMap;
 
         // IMU Params
-        BNO055IMU.Parameters imuParameters = new BNO055IMU.Parameters();
 
         imuParameters.mode                = BNO055IMU.SensorMode.IMU;
         imuParameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
@@ -123,7 +123,9 @@ public class HardwarePushbot
         armLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLift.setTargetPosition(0);
         armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         carSw.setMode(DigitalChannel.Mode.INPUT);
+        armGripper.setPosition(0.5);
 
         // Set reverse for NeverRest Motors
         frontRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -171,7 +173,7 @@ public class HardwarePushbot
         }
     }
 
-    public double deadzone(double input, double dead) {
+    public double deadZone(double input, double dead) {
         if (input < dead && input > -dead) {
             return 0.0;
         } else {
@@ -179,20 +181,14 @@ public class HardwarePushbot
         }
     }
 
-    public void resetArm() {
-        armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armLift.setTargetPosition((int) Math.round((10 / 360) * 537.7));
-        armLift.setPower(0.4);
-    }
-
-    public double getAngle() {
+    private double getAngle() {
         return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
     }
 
     public boolean isMoving(double err) {
-        return deadzone(frontLeftDrive.getTargetPosition() - frontLeftDrive.getCurrentPosition(), err) != 0 &&
-                deadzone(frontRightDrive.getTargetPosition() - frontRightDrive.getCurrentPosition(), err) != 0 &&
-                deadzone(backLeftDrive.getTargetPosition() - backLeftDrive.getCurrentPosition(), err) != 0 &&
-                deadzone(backRightDrive.getTargetPosition() - backRightDrive.getCurrentPosition(), err) != 0;
+        return deadZone(frontLeftDrive.getTargetPosition() - frontLeftDrive.getCurrentPosition(), err) != 0 &&
+                deadZone(frontRightDrive.getTargetPosition() - frontRightDrive.getCurrentPosition(), err) != 0 &&
+                deadZone(backLeftDrive.getTargetPosition() - backLeftDrive.getCurrentPosition(), err) != 0 &&
+                deadZone(backRightDrive.getTargetPosition() - backRightDrive.getCurrentPosition(), err) != 0;
     }
 }

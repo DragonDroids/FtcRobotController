@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -37,6 +38,12 @@ import java.util.List;
 @Config
 @Autonomous(group = "drive")
 public class RoadRunnerAutoRR extends LinearOpMode {
+    public int[] armPositions = {
+            320,// bottom
+            -360, // middle
+            -575, // high
+    };
+
     /*
     TensorFlow Stuff.
      */
@@ -74,237 +81,79 @@ public class RoadRunnerAutoRR extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         RoadRunnerAutoHardware drive = new RoadRunnerAutoHardware(hardwareMap);
 
-//        initVuforia();
-//        initTfod();
-//        if (tfod != null) {
-//            tfod.activate();
-//            tfod.setZoom(1.3, 16.0/9.0);
-//        }
-//
-//        // Declare positions variables
-//        char positionDetected = 'N';
-//        while (positionDetected == 'N') {
-//            positionDetected = detectPosition();
-//        }
-//
-//        char positionR = positionDetected;
-//        telemetry.addData("Pos Detected: ", positionR);
-//        telemetry.update();
-        String robotPositionR = "RR";
-//
-//        // Set path values
-//        String POSITION_KEY = "LCR";
-        String[] ROBOT_POSITION_KEY = {
-                "BL", "BR",
-                "RL", "RR"
-        };
-//        int position = POSITION_KEY.indexOf(positionR) - 1;
-        int robotPosition = Arrays.asList(ROBOT_POSITION_KEY).indexOf(robotPositionR);
-//        double shippingAngleTurnCalc;
-//        double shippingDistCalc;
-//        double elementTurnCalc;
-//        double elementDistCalc;
-//
-//        Pose2d startPos;
-//        int s = 1;
-//
-//        switch (robotPosition) {
-//            case 0:
-//                startPos = new Pose2d(-42, 61.75, Math.toRadians(270));
-//                s = -1;
-//                break;
-//            case 1:
-//                startPos = new Pose2d(11, 61.75, Math.toRadians(270));
-//                position *= -1;
-//                break;
-//            case 2:
-//                startPos = new Pose2d(-42, -61.75, Math.toRadians(90));
-//                break;
-//            case 3:
-//                startPos = new Pose2d(11, -61.75, Math.toRadians(90));
-//                s = -1;
-//                position *= -1;
-//                break;
-//            default:
-//                startPos = new Pose2d(0, 0, Math.toRadians(90));
-//                break;
-//        }
-//
-//        int sign = s;
-//
-//        switch (position) {
-//            case 1:
-//                shippingAngleTurnCalc = -74;
-//                shippingDistCalc = 24.0;
-//                elementTurnCalc = 13;
-//                elementDistCalc = 29;
-//                break;
-//            case 0:
-//                shippingAngleTurnCalc = -62.0;
-//                shippingDistCalc = 20.0;
-//                elementTurnCalc = 5;
-//                elementDistCalc = 24;
-//                break;
-//            default:
-//                shippingAngleTurnCalc = -36.0;
-//                shippingDistCalc = 15.0;
-//                elementTurnCalc = -19;
-//                elementDistCalc = 26;
-//                break;
-//        }
-//
-//        double shippingAngleTurn = shippingAngleTurnCalc;
-//        double shippingDist = shippingDistCalc;
-//        double elementTurn = elementTurnCalc;
-//        double elementDist = elementDistCalc;
-//        int pos = position;
-//
-//        drive.setPoseEstimate(startPos);
-//
-//        telemetry.addData("Ready", "to start");
-//        telemetry.update();
-//
-//        waitForStart();
-//
-//        if (isStopRequested()) return;
-//
-//        TrajectorySequence trajSeq0 = drive.trajectorySequenceBuilder(startPos)
-//                .forward(7)
-//                .build();
-//
-//        TrajectorySequence trajSeq1 = drive.trajectorySequenceBuilder(startPos)
-//                .turn(sign * Math.toRadians(elementTurn))
-//                .forward(elementDist)
-//                .build();
-//
-//        TrajectorySequence trajSeq2 = drive.trajectorySequenceBuilder(startPos)
-//                .turn(Math.toRadians(90))
-//                .forward(20)
-//                .build();
-//
-//        TrajectorySequence trajSeq3 = drive.trajectorySequenceBuilder(startPos)
-//                .back(20)
-//                .turn(Math.toRadians(-23))
-//                .build();
-//
-//        TrajectorySequence trajSeq4 = drive.trajectorySequenceBuilder(startPos)
-//                .waitSeconds(1)
-//                .turn(sign * Math.toRadians(shippingAngleTurn))
-//                .build();
-//
-//        TrajectorySequence trajSeq5 = drive.trajectorySequenceBuilder(startPos)
-//                .turn(Math.toRadians(225))
-//                .back(shippingDist)
-//                .build();
-//
-//        drive.closeArm();
-//        sleep(1000);
-//        drive.armLift.setPower(0.2);
-//        drive.armLift.setTargetPosition(500);
-//        while (drive.armLift.isBusy() && !opModeIsActive()) {}
-//        drive.followTrajectorySequence(trajSeq0);
-//        drive.followTrajectorySequence(trajSeq2);
-//        drive.armLift.setPower(0.2);
-//        drive.armLift.setTargetPosition(0);
-//        while (drive.armLift.isBusy() && opModeIsActive()) {}
-//        drive.openArm();
-//        drive.followTrajectorySequence(trajSeq3);
-//        drive.followTrajectorySequence(trajSeq1);
-//        drive.closeArm();
-//        drive.followTrajectorySequence(trajSeq4);
-//        drive.armLift.setPower(0.2);
-//        drive.armLift.setTargetPosition(2731);
-//        while (drive.armLift.isBusy() && opModeIsActive()) {}
-//        drive.followTrajectorySequence(trajSeq5);
-//        drive.openArm();
-//
-//        sleep(1000);
-////        drive.armLift.setPower(-0.4);
-//        telemetry.addData("Step", "0 : " + pos);
-//        telemetry.update();
-////        drive.followTrajectorySequence(trajSeq2);
-//        telemetry.addData("Done", "Finished");
-//        telemetry.update();
-//
-//        drive.openArm();
-//        drive.armLift.setPower(0.2);
-//        drive.armLift.setTargetPosition(0);
-//        while (drive.armLift.isBusy() && opModeIsActive()) {}
+        initVuforia();
+        initTfod();
+        if (tfod != null) {
+            tfod.activate();
+            tfod.setZoom(1.3, 16.0/9.0);
+        }
 
-        waitForStart();
+        // Declare positions variables
+        char positionDetected = 'N';
+        while (positionDetected == 'N' && (opModeIsActive() || !isStopRequested())) {
+            positionDetected = detectPosition();
+        }
+
+        telemetry.addData("Pos Detected: ", positionDetected);
+        telemetry.update();
+
+        int index = "RCL".indexOf(positionDetected);
 
         if (isStopRequested()) return;
 
+        waitForStart();
 
-        drive.closeArm();
         sleep(1000);
-        switch (robotPositionR) {
-            case "BL": {
-                int dist = 47;
-                int turn = 105;
-                int dist2 = 37;
-                TrajectorySequence traj0 = drive.trajectorySequenceBuilder(new Pose2d(0, 0, 0))
-                        .forward(dist)
-                        .turn(-Math.toRadians(turn))
-                        .forward(dist2)
-                        .build();
-                drive.armLift.setPower(0.2);
-                drive.armLift.setTargetPosition(500);
-                while (drive.armLift.isBusy() && opModeIsActive()) {
-                }
-                drive.followTrajectorySequence(traj0);
-                break;
-            }
-            case "BR": {
-                int dist = 37;
-                int turn = 100;
-                int dist2 = 90;
-                TrajectorySequence traj0 = drive.trajectorySequenceBuilder(new Pose2d(1, 0, 0))
-                        .forward(dist)
-                        .turn(Math.toRadians(turn))
-                        .forward(dist2)
-                        .build();
-                drive.armLift.setPower(0.2);
-                drive.armLift.setTargetPosition(500);
-                while (drive.armLift.isBusy() && opModeIsActive()) {
-                }
-                drive.followTrajectorySequence(traj0);
-                break;
-            }
-            case "RR": {
-                int dist = 47;
-                int turn = 105;
-                int dist2 = 90;
-                TrajectorySequence traj0 = drive.trajectorySequenceBuilder(new Pose2d(0, 0, 0))
-                        .forward(dist)
-                        .turn(-Math.toRadians(turn))
-                        .forward(dist2)
-                        .build();
-                drive.armLift.setPower(0.2);
-                drive.armLift.setTargetPosition(500);
-                while (drive.armLift.isBusy() && opModeIsActive()) {
-                }
-                drive.followTrajectorySequence(traj0);
-                break;
-            }
-            default: {
-                int dist = 47;
-                int turn = 105;
-                int dist2 = 37;
-                TrajectorySequence traj0 = drive.trajectorySequenceBuilder(new Pose2d(0, 0, 0))
-                        .forward(dist)
-                        .turn(Math.toRadians(turn))
-                        .forward(dist2)
-                        .build();
-                drive.armLift.setPower(0.2);
-                drive.armLift.setTargetPosition(500);
-                while (drive.armLift.isBusy() && opModeIsActive()) {
-                }
-                drive.followTrajectorySequence(traj0);
-                break;
-            }
+
+        drive.setPoseEstimate(new Pose2d(-30,60,Math.toRadians(270)));
+
+        TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(-30,-60,Math.toRadians(90)))
+                .forward(6)
+                .turn(Math.toRadians(156))
+                .back(12)
+                .build();
+
+        TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
+                .forward(14)
+                .turn(-Math.toRadians(66))
+                .forward(12.5)
+                .build();
+
+        TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(trajectorySequence1.end())
+                .back(50)
+                .splineTo(new Vector2d(12,-43), 0)
+                .back(60)
+                .build();
+
+        drive.followTrajectorySequence(trajectorySequence0);
+
+        drive.armLift.setTargetPosition(armPositions[index]);
+        drive.armLift.setPower(0.75);
+        while (drive.armLift.isBusy() && opModeIsActive()) {}
+        if (armPositions[index] == -575) {
+            drive.armClamp.setPosition(0.0);
+        } else if(armPositions[index] != 0) {
+            drive.armClamp.setPosition(1.0);
         }
-        telemetry.addData("STRING BOI", "done");
+
+        sleep(2000);
+
+        drive.armClamp.setPosition(0.5);
+        drive.armLift.setTargetPosition(0);
+        drive.armLift.setPower(0.75);
+        while (drive.armLift.isBusy() && opModeIsActive()) {}
+
+        drive.followTrajectorySequence(trajectorySequence1);
+
+        drive.carouselSpinner.setPower(-0.65);
+
+        sleep(2000);
+
+        drive.carouselSpinner.setPower(0.0);
+
+        drive.followTrajectorySequence(trajectorySequence2);
+
+        telemetry.addData("Run", "Done!");
     }
 
     private void initVuforia() {
@@ -348,8 +197,17 @@ public class RoadRunnerAutoRR extends LinearOpMode {
                 i++;
 
 
-                pos = Math.round(((recognition.getLeft() + recognition.getWidth() / 2) / 100 + 1) / 2) - 2;
+                int centerX = Math.round(recognition.getLeft() + (recognition.getWidth() / 2));
+
+                if (centerX >= 0 && centerX < 200) {
+                    pos = 0;
+                } else if (centerX >= 200 && centerX < 400) {
+                    pos = 1;
+                } else if (centerX >= 400 && centerX <= 600) {
+                    pos = 2;
+                }
             }
+
             if (debugMode) {
                 telemetry.update();
             }
@@ -358,10 +216,6 @@ public class RoadRunnerAutoRR extends LinearOpMode {
         if (debugMode) {
             telemetry.addData("Element Pos", pos);
             telemetry.update();
-        }
-
-        if (pos == -1) {
-            pos = 1;
         }
 
         return POSITION_KEY[pos];

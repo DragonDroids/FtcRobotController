@@ -40,8 +40,8 @@ public class DDTeleOp extends LinearOpMode {
     HardwarePushbot robot = new HardwarePushbot();
 
     int[] positions = {
-            -545,// high
-            -400, // middle
+            -575,// high
+            -360, // middle
             0, // reset
     };
 
@@ -68,6 +68,8 @@ public class DDTeleOp extends LinearOpMode {
         double armSpeedMove = 0.75;
         double carouselSpeed = 0.65;
 
+        int currentHeight = 0;
+
         while (opModeIsActive()) {
             // Check if variable speed is required
             robot.getMovementSpeed(gamepad1);
@@ -78,17 +80,20 @@ public class DDTeleOp extends LinearOpMode {
                 armSpeed = armSpeedMove;
                 robot.armLift.setTargetPosition(armTarget);
                 robot.armLift.setPower(armSpeed);
+                currentHeight = positions[0];
             } else if (gamepad2.b) {
                 armTarget = positions[1];
                 armSpeed = armSpeedMove;
                 robot.armLift.setTargetPosition(armTarget);
                 robot.armLift.setPower(armSpeed);
+                currentHeight = positions[1];
             } else if (gamepad2.a) {
                 armTarget = positions[2];
                 armSpeed = armSpeedMove;
                 robot.armLift.setTargetPosition(armTarget);
                 robot.armLift.setPower(armSpeed);
-                robot.armGripper.setPosition(1.0);
+                robot.armGripper.setPosition(0.5);
+                currentHeight = positions[2];
             }
 
             if (gamepad1.a) {
@@ -112,26 +117,34 @@ public class DDTeleOp extends LinearOpMode {
             }
 
             if (gamepad2.right_trigger > 0.1) {
-                armTarget = robot.armLift.getCurrentPosition() + 10;
+                armTarget = robot.armLift.getCurrentPosition() + 20;
                 armSpeed = 0.35;
                 robot.armLift.setTargetPosition(armTarget);
                 robot.armLift.setPower(armSpeed);
             } else if (gamepad2.left_trigger > 0.1) {
-                armTarget = robot.armLift.getCurrentPosition() - 10;
+                armTarget = robot.armLift.getCurrentPosition() - 20;
                 armSpeed = 0.35;
                 robot.armLift.setTargetPosition(armTarget);
                 robot.armLift.setPower(armSpeed);
             }
 
             if (gamepad2.right_bumper) {
-                robot.armGripper.setPosition(0.0);
-            } else if (gamepad2.left_bumper) {
-                robot.armGripper.setPosition(1.0);
+                robot.armGripper.setPosition(0.5);
+            } else if (gamepad2.left_bumper && currentHeight != 0) {
+                if (currentHeight == -575) {
+                    robot.armGripper.setPosition(0.0);
+                } else {
+                    robot.armGripper.setPosition(1.0);
+                }
             }
 
             if (gamepad1.back) {
                 robot.armLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 robot.armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+
+            if (gamepad1.x) {
+                robot.imu.initialize(robot.imuParameters);
             }
 
 //            robot.armGripper.setPosition(gripperResult ? 1.0 : 0.0);

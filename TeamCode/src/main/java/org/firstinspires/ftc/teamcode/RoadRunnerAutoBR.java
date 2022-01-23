@@ -2,12 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 import android.annotation.SuppressLint;
 
-import androidx.annotation.NonNull;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -16,10 +12,9 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 
-import java.util.Arrays;
 import java.util.List;
 
 /*
@@ -29,7 +24,8 @@ import java.util.List;
  * to the RC's WiFi network. In your browser, navigate to https://192.168.49.1:8080/dash if you're
  * using the RC phone or https://192.168.43.1:8080/dash if you are using the Control Hub. Once
  * you've successfully connected, start the program, and your robot will begin driving in a square.
- * You should observe the target position (green) and your pose estimate (blue) and adjust your
+ * You should observe the target position (green) and your pose estimate (blue) and
+ *  adjust your
  * follower PID coefficients such that you follow the target position as accurately as possible.
  * If you are using SampleTankDrive, you should be tuning TRANSLATIONAL_PID and HEADING_PID.
  * If you are using SampleTankDrive, you should be tuning AXIAL_PID, CROSS_TRACK_PID, and HEADING_PID.
@@ -41,8 +37,8 @@ import java.util.List;
 @Autonomous(group = "drive")
 public class RoadRunnerAutoBR extends LinearOpMode {
     public int[] armPositions = {
-            0,// bottom
-            -400, // middle
+            -320,// bottom
+            -450, // middle
             -545, // high
     };
 
@@ -71,10 +67,11 @@ public class RoadRunnerAutoBR extends LinearOpMode {
                     "81+4+4DhbQ2tWq9Xisz4NvAu2l1IN8uj6qvmjmg02YfS7+REk+/NxVrS15d2fvFh7lE9RMlLtMwgkK9903e2mgxf48yL9IQMXoTfBJhY3" +
                     "X4cSKSzz4XGKDjqvIXnAd47NYB8TXuOwY0N8bL9+jPNPaw3E2SgOU2imUU6kCAQvrUPF24AI1FqtvlhZbeYLe/EQVJaC2fqcODw2Xp5px" +
                     "j1h4lS6tGXQqRZ1we0i4Wf/S+1/A4GDcb3B7hfpkRJP6AYvLxisBlP2qj";
+
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
-    private final boolean debugMode = false;
+    private final boolean debugMode = true;
     /*
     End TensorFlow Stuff.
      */
@@ -97,7 +94,7 @@ public class RoadRunnerAutoBR extends LinearOpMode {
         }
 
         telemetry.addData("Pos Detected: ", positionDetected);
-        telemetry.update();
+        // telemetry.update();
 
         int index = "RCL".indexOf(positionDetected);
 
@@ -107,31 +104,55 @@ public class RoadRunnerAutoBR extends LinearOpMode {
         if (isStopRequested()) return;
 
 
-        drive.closeArm();
         sleep(1000);
 
-        drive.setPoseEstimate(new Pose2d(12,61,Math.toRadians(270)));
 
-        TrajectorySequence trajectorySequence = drive.trajectorySequenceBuilder(new Pose2d(12,61,Math.toRadians(270)))
+        drive.setPoseEstimate(new Pose2d(12,61,Math.toRadians(270)));
+        double dist = 18;
+        TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(12,61,Math.toRadians(270)))
                 .forward(6)
-                .turn(Math.toRadians(156))
-                .back(12)
-                .addDisplacementMarker(() -> {
-                    drive.armLift.setTargetPosition(armPositions[index]);
-                    drive.armLift.setPower(0.75);
-                    while (drive.armLift.isBusy() && opModeIsActive()) {}
-                    drive.armClamp.setPosition(0);
-                })
-                .waitSeconds(0.5)
-                .addDisplacementMarker(() -> {
-                    drive.armLift.setTargetPosition(0);
-                    drive.armClamp.setPosition(1);
-                })
+                .turn(Math.toRadians(162))
+                .back(dist)
                 .build();
 
-        drive.followTrajectorySequence(trajectorySequence);
+        TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
+                .back(3 + ((index % 2) * 3))
+                .build();
+
+        TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(trajectorySequence1.end())
+                .forward(dist - 6)
+                .turn(-Math.toRadians(78))
+                .forward(70)
+                .build();
+
+        drive.followTrajectorySequence(trajectorySequence0);
+
+        drive.armLift.setTargetPosition(armPositions[index]);
+        drive.armLift.setPower(0.75);
+        while (drive.armLift.isBusy() && opModeIsActive()) {}
+        DriveConstants.MAX_ACCEL = 80;
+        drive.followTrajectorySequence(trajectorySequence1);
+
+        if (armPositions[index] == -545) {
+            drive.armClamp.setPosition(0.0);
+        } else if(armPositions[index] != 0) {
+            drive.armClamp.setPosition(1.0);
+        }
+
+        sleep(2000);
+
+        drive.armClamp.setPosition(0.5);
+        drive.armLift.setTargetPosition(0);
+        drive.armLift.setPower(0.75);
+
+        DriveConstants.MAX_ACCEL = 90;
+
+        while (drive.armLift.isBusy() && opModeIsActive()) {}
+
+        drive.followTrajectorySequence(trajectorySequence2);
 
         telemetry.addData("Run", "Done!");
+        telemetry.update();
     }
 
     private void initVuforia() {
@@ -174,7 +195,15 @@ public class RoadRunnerAutoBR extends LinearOpMode {
                 }
                 i++;
 
-                pos = Math.round(((recognition.getLeft() + recognition.getWidth() / 2) / 100 + 1) / 2) - 2;
+                int centerX = Math.round(recognition.getLeft() + (recognition.getWidth() / 2));
+
+                if (centerX >= 0 && centerX < 200) {
+                    pos = 0;
+                } else if (centerX >= 200 && centerX < 400) {
+                    pos = 1;
+                } else if (centerX >= 400 && centerX <= 600) {
+                    pos = 2;
+                }
             }
             if (debugMode) {
                 telemetry.update();
@@ -184,10 +213,6 @@ public class RoadRunnerAutoBR extends LinearOpMode {
         if (debugMode) {
             telemetry.addData("Element Pos", pos);
             telemetry.update();
-        }
-
-        if (pos == -1) {
-            pos = 1;
         }
 
         return POSITION_KEY[pos];
