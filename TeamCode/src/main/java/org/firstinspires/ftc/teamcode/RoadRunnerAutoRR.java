@@ -1,24 +1,17 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-
-import java.util.Arrays;
 import java.util.List;
 
 /*
@@ -39,7 +32,7 @@ import java.util.List;
 @Autonomous(group = "drive")
 public class RoadRunnerAutoRR extends LinearOpMode {
     public int[] armPositions = {
-            320,// bottom
+            -320,// bottom
             -360, // middle
             -575, // high
     };
@@ -107,22 +100,32 @@ public class RoadRunnerAutoRR extends LinearOpMode {
 
         drive.setPoseEstimate(new Pose2d(-30,60,Math.toRadians(270)));
 
-        TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(-30,-60,Math.toRadians(90)))
+        TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(-30,60,Math.toRadians(270)))
                 .forward(6)
-                .turn(Math.toRadians(156))
-                .back(12)
+                .turn(Math.toRadians(140))
+                .back(25)
                 .build();
 
         TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
-                .forward(14)
-                .turn(-Math.toRadians(66))
-                .forward(12.5)
+                .back(5)
                 .build();
 
         TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(trajectorySequence1.end())
-                .back(50)
-                .splineTo(new Vector2d(12,-43), 0)
-                .back(60)
+                .forward(10)
+                .build();
+
+        TrajectorySequence trajectorySequence3 = drive.trajectorySequenceBuilder(trajectorySequence2.end())
+                .forward(22)
+                .turn(-Math.toRadians(50))
+                .forward(13)
+                .build();
+
+        TrajectorySequence trajectorySequence4 = drive.trajectorySequenceBuilder(trajectorySequence3.end())
+                .back(25)
+                .turn(-Math.toRadians(10))
+                .back(25)
+                .splineTo(new Vector2d(12,-46.5), 0)
+                .back(65)
                 .build();
 
         drive.followTrajectorySequence(trajectorySequence0);
@@ -130,6 +133,7 @@ public class RoadRunnerAutoRR extends LinearOpMode {
         drive.armLift.setTargetPosition(armPositions[index]);
         drive.armLift.setPower(0.75);
         while (drive.armLift.isBusy() && opModeIsActive()) {}
+        drive.followTrajectorySequence(trajectorySequence1);
         if (armPositions[index] == -575) {
             drive.armClamp.setPosition(0.0);
         } else if(armPositions[index] != 0) {
@@ -139,11 +143,14 @@ public class RoadRunnerAutoRR extends LinearOpMode {
         sleep(2000);
 
         drive.armClamp.setPosition(0.5);
+
+        drive.followTrajectorySequence(trajectorySequence2);
+
         drive.armLift.setTargetPosition(0);
         drive.armLift.setPower(0.75);
         while (drive.armLift.isBusy() && opModeIsActive()) {}
 
-        drive.followTrajectorySequence(trajectorySequence1);
+        drive.followTrajectorySequence(trajectorySequence3);
 
         drive.carouselSpinner.setPower(-0.65);
 
@@ -151,7 +158,7 @@ public class RoadRunnerAutoRR extends LinearOpMode {
 
         drive.carouselSpinner.setPower(0.0);
 
-        drive.followTrajectorySequence(trajectorySequence2);
+        drive.followTrajectorySequence(trajectorySequence4);
 
         telemetry.addData("Run", "Done!");
     }

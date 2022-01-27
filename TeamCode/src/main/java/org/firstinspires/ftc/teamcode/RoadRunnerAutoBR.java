@@ -108,11 +108,11 @@ public class RoadRunnerAutoBR extends LinearOpMode {
 
 
         drive.setPoseEstimate(new Pose2d(12,61,Math.toRadians(270)));
-        double dist = 18;
+
         TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(12,61,Math.toRadians(270)))
                 .forward(6)
                 .turn(Math.toRadians(162))
-                .back(dist)
+                .back(18)
                 .build();
 
         TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
@@ -120,7 +120,7 @@ public class RoadRunnerAutoBR extends LinearOpMode {
                 .build();
 
         TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(trajectorySequence1.end())
-                .forward(dist - 6)
+                .forward(12)
                 .turn(-Math.toRadians(78))
                 .forward(70)
                 .build();

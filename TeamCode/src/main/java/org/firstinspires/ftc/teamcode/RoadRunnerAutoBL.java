@@ -131,7 +131,7 @@ public class RoadRunnerAutoBL extends LinearOpMode {
                 .back(25)
                 .turn(Math.toRadians(10))
                 .back(25)
-                .splineTo(new Vector2d(12,47), 0)
+                .splineTo(new Vector2d(12,46.5), 0)
                 .back(65)
                 .build();
 
