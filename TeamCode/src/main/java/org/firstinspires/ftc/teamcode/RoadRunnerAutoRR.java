@@ -152,7 +152,7 @@ public class RoadRunnerAutoRR extends LinearOpMode {
 
         drive.followTrajectorySequence(trajectorySequence3);
 
-        drive.carouselSpinner.setPower(-0.65);
+        drive.carouselSpinner.setPower(0.65);
 
         sleep(2000);
 
