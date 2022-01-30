@@ -16,6 +16,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 import java.util.Arrays;
@@ -92,6 +93,7 @@ public class RoadRunnerAutoBL extends LinearOpMode {
         char positionDetected = 'N';
         while (positionDetected == 'N' && (opModeIsActive() || !isStopRequested())) {
             positionDetected = detectPosition();
+            sleep(10);
         }
 
         telemetry.addData("Pos Detected: ", positionDetected);
@@ -132,6 +134,9 @@ public class RoadRunnerAutoBL extends LinearOpMode {
                 .turn(Math.toRadians(10))
                 .back(25)
                 .splineTo(new Vector2d(12,46.5), 0)
+                .build();
+
+        TrajectorySequence trajectorySequence5 = drive.trajectorySequenceBuilder(trajectorySequence4.end())
                 .back(65)
                 .build();
 
@@ -161,11 +166,15 @@ public class RoadRunnerAutoBL extends LinearOpMode {
 
         drive.carouselSpinner.setPower(-0.65);
 
-        sleep(2000);
+        sleep(2100);
 
         drive.carouselSpinner.setPower(0.0);
 
         drive.followTrajectorySequence(trajectorySequence4);
+
+        DriveConstants.MAX_ACCEL = 110;
+        drive.followTrajectorySequence(trajectorySequence5);
+        DriveConstants.MAX_ACCEL = 90;
 
         telemetry.addData("Run", "Done!");
     }
@@ -210,18 +219,18 @@ public class RoadRunnerAutoBL extends LinearOpMode {
                 }
                 i++;
 
-
                 int centerX = Math.round(recognition.getLeft() + (recognition.getWidth() / 2));
 
-                if (centerX >= 0 && centerX < 200) {
+                int width = 800;
+
+                if (centerX >= 0 && centerX < width / 3) {
                     pos = 0;
-                } else if (centerX >= 200 && centerX < 400) {
+                } else if (centerX >= width / 3 && centerX < 2 * width / 3) {
                     pos = 1;
-                } else if (centerX >= 400 && centerX <= 600) {
+                } else if (centerX >= 2 * width / 3 && centerX <= width) {
                     pos = 2;
                 }
             }
-
             if (debugMode) {
                 telemetry.update();
             }

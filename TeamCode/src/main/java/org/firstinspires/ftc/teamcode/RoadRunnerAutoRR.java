@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import android.annotation.SuppressLint;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -11,6 +10,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import java.util.List;
 
@@ -32,9 +32,9 @@ import java.util.List;
 @Autonomous(group = "drive")
 public class RoadRunnerAutoRR extends LinearOpMode {
     public int[] armPositions = {
-            -320,// bottom
-            -360, // middle
             -575, // high
+            -360, // middle
+            -320,// bottom
     };
 
     /*
@@ -65,7 +65,7 @@ public class RoadRunnerAutoRR extends LinearOpMode {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
-    private final boolean debugMode = false;
+    final boolean debugMode = false;
     /*
     End TensorFlow Stuff.
      */
@@ -85,6 +85,7 @@ public class RoadRunnerAutoRR extends LinearOpMode {
         char positionDetected = 'N';
         while (positionDetected == 'N' && (opModeIsActive() || !isStopRequested())) {
             positionDetected = detectPosition();
+            sleep(10);
         }
 
         telemetry.addData("Pos Detected: ", positionDetected);
@@ -98,12 +99,12 @@ public class RoadRunnerAutoRR extends LinearOpMode {
 
         sleep(1000);
 
-        drive.setPoseEstimate(new Pose2d(-30,60,Math.toRadians(270)));
+        drive.setPoseEstimate(new Pose2d(-30,-60,Math.toRadians(90)));
 
-        TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(-30,60,Math.toRadians(270)))
+        TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(-30,-60,Math.toRadians(90)))
                 .forward(6)
-                .turn(Math.toRadians(140))
-                .back(25)
+                .turn(Math.toRadians(165))
+                .back(15)
                 .build();
 
         TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
@@ -111,21 +112,21 @@ public class RoadRunnerAutoRR extends LinearOpMode {
                 .build();
 
         TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(trajectorySequence1.end())
-                .forward(10)
+                .forward(5)
                 .build();
 
         TrajectorySequence trajectorySequence3 = drive.trajectorySequenceBuilder(trajectorySequence2.end())
-                .forward(22)
-                .turn(-Math.toRadians(50))
-                .forward(13)
+                .forward(5)
+                .turn(-Math.toRadians(85))
+                .forward(35)
+                .turn(Math.toRadians(125))
+                .forward(9)
                 .build();
 
         TrajectorySequence trajectorySequence4 = drive.trajectorySequenceBuilder(trajectorySequence3.end())
-                .back(25)
-                .turn(-Math.toRadians(10))
-                .back(25)
-                .splineTo(new Vector2d(12,-46.5), 0)
-                .back(65)
+                .back(12)
+                .turn(-Math.toRadians(135))
+                .back(120)
                 .build();
 
         drive.followTrajectorySequence(trajectorySequence0);
@@ -140,11 +141,13 @@ public class RoadRunnerAutoRR extends LinearOpMode {
             drive.armClamp.setPosition(1.0);
         }
 
-        sleep(2000);
+//        sleep(2000);
 
-        drive.armClamp.setPosition(0.5);
+        DriveConstants.MAX_ACCEL = 120;
 
         drive.followTrajectorySequence(trajectorySequence2);
+
+        drive.armClamp.setPosition(0.5);
 
         drive.armLift.setTargetPosition(0);
         drive.armLift.setPower(0.75);
@@ -158,7 +161,11 @@ public class RoadRunnerAutoRR extends LinearOpMode {
 
         drive.carouselSpinner.setPower(0.0);
 
+
+
         drive.followTrajectorySequence(trajectorySequence4);
+
+        DriveConstants.MAX_ACCEL = 90;
 
         telemetry.addData("Run", "Done!");
     }
@@ -203,18 +210,18 @@ public class RoadRunnerAutoRR extends LinearOpMode {
                 }
                 i++;
 
-
                 int centerX = Math.round(recognition.getLeft() + (recognition.getWidth() / 2));
 
-                if (centerX >= 0 && centerX < 200) {
+                int width = 800;
+
+                if (centerX >= 0 && centerX < width / 3) {
                     pos = 0;
-                } else if (centerX >= 200 && centerX < 400) {
+                } else if (centerX >= width / 3 && centerX < 2 * width / 3) {
                     pos = 1;
-                } else if (centerX >= 400 && centerX <= 600) {
+                } else if (centerX >= 2 * width / 3 && centerX <= width) {
                     pos = 2;
                 }
             }
-
             if (debugMode) {
                 telemetry.update();
             }
