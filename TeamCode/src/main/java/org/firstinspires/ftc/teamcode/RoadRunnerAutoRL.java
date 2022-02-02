@@ -18,33 +18,24 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import java.util.List;
 
 /*
- * Op mode for preliminary tuning of the follower PID coefficients (located in the drive base
- * classes). The robot drives in a DISTANCE-by-DISTANCE square indefinitely. Utilization of the
- * dashboard is recommended for this tuning routine. To access the dashboard, connect your computer
- * to the RC's WiFi network. In your browser, navigate to https://192.168.49.1:8080/dash if you're
- * using the RC phone or https://192.168.43.1:8080/dash if you are using the Control Hub. Once
- * you've successfully connected, start the program, and your robot will begin driving in a square.
- * You should observe the target position (green) and your pose estimate (blue) and
- *  adjust your
- * follower PID coefficients such that you follow the target position as accurately as possible.
- * If you are using SampleTankDrive, you should be tuning TRANSLATIONAL_PID and HEADING_PID.
- * If you are using SampleTankDrive, you should be tuning AXIAL_PID, CROSS_TRACK_PID, and HEADING_PID.
- * These coefficients can be tuned live in dashboard.
- */
+    Dragon Droids Team #19643
+    RoadRunnerAutoRL
+*/
 
 @Config
 
-@Autonomous(group = "drive")
+@Autonomous(name="Red Warehouse", group = "drive")
 public class RoadRunnerAutoRL extends LinearOpMode {
     public int[] armPositions = {
-            -320,// bottom
-            -430, // middle
-            -575, // high
+            -320, // Bottom Position
+            -430, // Middle Position
+            -575, // High Position
     };
 
     /*
-    TensorFlow Stuff.
+        Start TensorFlow
      */
+
     private static final String TFOD_MODEL_ASSET = "model_ycup.tflite";
 
     private static final String[] LABELS = {
@@ -71,13 +62,15 @@ public class RoadRunnerAutoRL extends LinearOpMode {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
-    private final boolean debugMode = true;
+    final boolean debugMode = true;
+
     /*
-    End TensorFlow Stuff.
+        End TensorFlow
      */
 
     @Override
     public void runOpMode() throws InterruptedException {
+        // Red Near Warehouse
         RoadRunnerAutoHardware drive = new RoadRunnerAutoHardware(hardwareMap);
 
         initVuforia();

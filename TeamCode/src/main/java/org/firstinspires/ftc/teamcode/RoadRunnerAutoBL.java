@@ -2,12 +2,9 @@ package org.firstinspires.ftc.teamcode;
 
 import android.annotation.SuppressLint;
 
-import androidx.annotation.NonNull;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -19,35 +16,27 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
-import java.util.Arrays;
 import java.util.List;
 
 /*
- * Op mode for preliminary tuning of the follower PID coefficients (located in the drive base
- * classes). The robot drives in a DISTANCE-by-DISTANCE square indefinitely. Utilization of the
- * dashboard is recommended for this tuning routine. To access the dashboard, connect your computer
- * to the RC's WiFi network. In your browser, navigate to https://192.168.49.1:8080/dash if you're
- * using the RC phone or https://192.168.43.1:8080/dash if you are using the Control Hub. Once
- * you've successfully connected, start the program, and your robot will begin driving in a square.
- * You should observe the target position (green) and your pose estimate (blue) and adjust your
- * follower PID coefficients such that you follow the target position as accurately as possible.
- * If you are using SampleTankDrive, you should be tuning TRANSLATIONAL_PID and HEADING_PID.
- * If you are using SampleTankDrive, you should be tuning AXIAL_PID, CROSS_TRACK_PID, and HEADING_PID.
- * These coefficients can be tuned live in dashboard.
- */
+    Dragon Droids Team #19643
+    RoadRunnerAutoBL
+*/
 
 @Config
-@Autonomous(group = "drive")
+
+@Autonomous(name="Blue Carousel", group = "drive")
 public class RoadRunnerAutoBL extends LinearOpMode {
     public int[] armPositions = {
-            -320,// bottom
-            -360, // middle
-            -575, // high
+            -320, // Bottom Position
+            -360, // Middle Position
+            -575, // High Position
     };
 
     /*
-    TensorFlow Stuff.
+        Start TensorFlow
      */
+
     private static final String TFOD_MODEL_ASSET = "model_ycup.tflite";
 
     private static final String[] LABELS = {
@@ -73,13 +62,15 @@ public class RoadRunnerAutoBL extends LinearOpMode {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
-    private final boolean debugMode = false;
+    final boolean debugMode = false;
+
     /*
-    End TensorFlow Stuff.
+        End TensorFlow
      */
 
     @Override
     public void runOpMode() throws InterruptedException {
+        // Blue Carousel
         RoadRunnerAutoHardware drive = new RoadRunnerAutoHardware(hardwareMap);
 
         initVuforia();
@@ -109,13 +100,19 @@ public class RoadRunnerAutoBL extends LinearOpMode {
 
         drive.setPoseEstimate(new Pose2d(-30,60,Math.toRadians(270)));
 
+        // Turns and moves to Hub
         TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(-30,60,Math.toRadians(270)))
+                // Gives space from wall
                 .forward(6)
+                // Turns to face Alliance Shipping Hub
                 .turn(-Math.toRadians(140))
+                // Backs into Hub
                 .back(25)
                 .build();
 
+        // Moves Closer To Hub
         TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
+                // Backs into Hub more
                 .back(5)
                 .build();
 
@@ -164,7 +161,7 @@ public class RoadRunnerAutoBL extends LinearOpMode {
 
         drive.followTrajectorySequence(trajectorySequence3);
 
-        drive.carouselSpinner.setPower(-0.65);
+        drive.carouselSpinner.setPower(0.65);
 
         sleep(2100);
 

@@ -31,18 +31,22 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
-@TeleOp(name="DD TeleOp", group="Linear Opmode")
+/*
+    Dragon Droids Team #19643
+    DDTeleOp
+*/
+
+@TeleOp(name="MainTeleOp", group="Linear Opmode")
 
 public class DDTeleOp extends LinearOpMode {
-    // Declares the robot
+    // Initialize robot parameters
     HardwarePushbot robot = new HardwarePushbot();
 
     int[] positions = {
-            -575,// high
-            -360, // middle
-            0, // reset
+            -575, // High Position
+            -360, // Middle Position
+            0,    // Reset Position (Bottom)
     };
 
 
@@ -51,16 +55,10 @@ public class DDTeleOp extends LinearOpMode {
         // Make sure your ID's match your configuration
         robot.init(hardwareMap);
 
-        /*
-        This code is to stabilize the arm prior to the run.
-
-        robot.resetArm();
-        */
-
-        // Waits for the start button to be pressed
+        // Wait for the Start Button
         waitForStart();
 
-        // Checks if stop is pressed by user
+        // If the user stops the program, cancel the OpMode loop
         if (isStopRequested()) return;
 
         int armTarget;
@@ -71,10 +69,10 @@ public class DDTeleOp extends LinearOpMode {
         int currentHeight = 0;
 
         while (opModeIsActive()) {
-            // Check if variable speed is required
+            // If variable speed is required, apply it
             robot.getMovementSpeed(gamepad1);
 
-            // Move arm lift to target position
+            // Move Arm Lift to target position, based on button press
             if (gamepad2.y){
                 armTarget = positions[0];
                 armSpeed = armSpeedMove;
@@ -96,6 +94,7 @@ public class DDTeleOp extends LinearOpMode {
                 currentHeight = positions[2];
             }
 
+            // Run Intake in specified direction, based on button press
             if (gamepad1.a) {
                 robot.motorTest.setPower(1);
             } else if (gamepad1.b) {
@@ -104,10 +103,11 @@ public class DDTeleOp extends LinearOpMode {
                 robot.motorTest.setPower(0);
             }
 
-            // Take in the left and right powers for the motors through joystick
+            // Calculate the left and right powers to apply to the motors based on joystick
             double leftPower = (-gamepad1.left_stick_y + gamepad1.left_stick_x) * robot.speed;
             double rightPower = (-gamepad1.left_stick_y - gamepad1.left_stick_x) * robot.speed;
 
+            // Spin carousel in specified direction, based on joystick
             if (gamepad1.right_stick_x > 0) {
                 robot.carousel.setPower(-carouselSpeed);
             } else if (gamepad1.right_stick_x < 0) {
@@ -116,6 +116,7 @@ public class DDTeleOp extends LinearOpMode {
                 robot.carousel.setPower(0.0);
             }
 
+            // Fine-adjust Arm Lift, based on trigger
             if (gamepad2.right_trigger > 0.1) {
                 armTarget = robot.armLift.getCurrentPosition() + 20;
                 armSpeed = 0.35;
@@ -128,6 +129,7 @@ public class DDTeleOp extends LinearOpMode {
                 robot.armLift.setPower(armSpeed);
             }
 
+            // Rotate drop-off box based on bumper
             if (gamepad2.right_bumper) {
                 robot.armGripper.setPosition(0.5);
             } else if (gamepad2.left_bumper && currentHeight != 0) {
@@ -138,25 +140,14 @@ public class DDTeleOp extends LinearOpMode {
                 }
             }
 
-            if (gamepad1.back) {
-                robot.armLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                robot.armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            }
-
-            if (gamepad1.x) {
-                robot.imu.initialize(robot.imuParameters);
-            }
-
-//            robot.armGripper.setPosition(gripperResult ? 1.0 : 0.0);
-
-            // Move the robot according to the joystick powers
+            // Apply calculated powers to the robot
             robot.leftPower = leftPower;
             robot.rightPower = rightPower;
 
             robot.setMoveMotors();
 
-            // Adds data to telemetry
-            robot.debug(true, telemetry, gamepad1, gamepad2);
+            // Add data to telemetry, for debugging
+            robot.debug(true, telemetry);
         }
     }
 }

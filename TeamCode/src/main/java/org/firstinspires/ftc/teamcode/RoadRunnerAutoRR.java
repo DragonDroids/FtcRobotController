@@ -15,31 +15,24 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import java.util.List;
 
 /*
- * Op mode for preliminary tuning of the follower PID coefficients (located in the drive base
- * classes). The robot drives in a DISTANCE-by-DISTANCE square indefinitely. Utilization of the
- * dashboard is recommended for this tuning routine. To access the dashboard, connect your computer
- * to the RC's WiFi network. In your browser, navigate to https://192.168.49.1:8080/dash if you're
- * using the RC phone or https://192.168.43.1:8080/dash if you are using the Control Hub. Once
- * you've successfully connected, start the program, and your robot will begin driving in a square.
- * You should observe the target position (green) and your pose estimate (blue) and adjust your
- * follower PID coefficients such that you follow the target position as accurately as possible.
- * If you are using SampleTankDrive, you should be tuning TRANSLATIONAL_PID and HEADING_PID.
- * If you are using SampleTankDrive, you should be tuning AXIAL_PID, CROSS_TRACK_PID, and HEADING_PID.
- * These coefficients can be tuned live in dashboard.
- */
+    Dragon Droids Team #19643
+    RoadRunnerAutoRR
+*/
 
 @Config
-@Autonomous(group = "drive")
+
+@Autonomous(name="Red Carousel", group = "drive")
 public class RoadRunnerAutoRR extends LinearOpMode {
     public int[] armPositions = {
-            -575, // high
-            -360, // middle
-            -320,// bottom
+            -575, // High Position
+            -360, // Middle Position
+            -320, // Low Position
     };
 
     /*
-    TensorFlow Stuff.
+      Start TensorFlow
      */
+
     private static final String TFOD_MODEL_ASSET = "model_ycup.tflite";
 
     private static final String[] LABELS = {
@@ -72,6 +65,7 @@ public class RoadRunnerAutoRR extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        // Red Carousel
         RoadRunnerAutoHardware drive = new RoadRunnerAutoHardware(hardwareMap);
 
         initVuforia();
@@ -108,7 +102,7 @@ public class RoadRunnerAutoRR extends LinearOpMode {
                 .build();
 
         TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
-                .back(5)
+                .back(9)
                 .build();
 
         TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(trajectorySequence1.end())
@@ -119,14 +113,15 @@ public class RoadRunnerAutoRR extends LinearOpMode {
                 .forward(5)
                 .turn(-Math.toRadians(85))
                 .forward(35)
-                .turn(Math.toRadians(125))
-                .forward(9)
+                .turn(Math.toRadians(115))
+                .forward(18)
                 .build();
 
         TrajectorySequence trajectorySequence4 = drive.trajectorySequenceBuilder(trajectorySequence3.end())
-                .back(12)
-                .turn(-Math.toRadians(135))
-                .back(120)
+                .back(13)
+                .turn(Math.toRadians(115))
+                .back(15)
+                .forward(140)
                 .build();
 
         drive.followTrajectorySequence(trajectorySequence0);
@@ -141,7 +136,7 @@ public class RoadRunnerAutoRR extends LinearOpMode {
             drive.armClamp.setPosition(1.0);
         }
 
-//        sleep(2000);
+        sleep(2000);
 
         DriveConstants.MAX_ACCEL = 120;
 

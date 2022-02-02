@@ -53,6 +53,12 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
  */
 @Config
 public class RoadRunnerAutoHardware extends TankDrive {
+    public int[] armPositions = {
+            -320, // Bottom Position
+            -360, // Middle Position
+            -575, // High Position
+    };
+
     public static PIDCoefficients AXIAL_PID = new PIDCoefficients(0, 0, 0);
     public static PIDCoefficients CROSS_TRACK_PID = new PIDCoefficients(0, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(1.55, 0, 0);

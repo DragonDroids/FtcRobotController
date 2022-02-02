@@ -41,11 +41,12 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 public class HardwarePushbot
 {
-    /* Public OpMode members. */
+    /*
+        Public OpMode members.
+    */
     public DcMotor  frontLeftDrive   = null;
     public DcMotor  frontRightDrive  = null;
     public DcMotor  backLeftDrive   = null;
@@ -71,11 +72,10 @@ public class HardwarePushbot
     public double speed;
     public double leftPower;
     public double rightPower;
-    public boolean move = false;
 
-    private final double maxSpeed = 1;
-    private final double minSpeed = 0.5;
-    private final boolean variableSpeed = true;
+    final double maxSpeed = 1;
+    final double minSpeed = 0.5;
+    final boolean variableSpeed = true;
 
     public double tickPerRev = 537.7;
 
@@ -152,7 +152,7 @@ public class HardwarePushbot
         backLeftDrive.setPower(leftPower);
     }
 
-    public void debug(boolean deb, Telemetry tel, Gamepad gamepad1, Gamepad gamepad2) {
+    public void debug(boolean deb, Telemetry tel) {
         if (deb) {
             tel.addData("Front Left", frontLeftDrive.getCurrentPosition() / tickPerRev);
             tel.addData("Front Right", frontRightDrive.getCurrentPosition() / tickPerRev);
@@ -173,22 +173,7 @@ public class HardwarePushbot
         }
     }
 
-    public double deadZone(double input, double dead) {
-        if (input < dead && input > -dead) {
-            return 0.0;
-        } else {
-            return input;
-        }
-    }
-
     private double getAngle() {
         return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
-    }
-
-    public boolean isMoving(double err) {
-        return deadZone(frontLeftDrive.getTargetPosition() - frontLeftDrive.getCurrentPosition(), err) != 0 &&
-                deadZone(frontRightDrive.getTargetPosition() - frontRightDrive.getCurrentPosition(), err) != 0 &&
-                deadZone(backLeftDrive.getTargetPosition() - backLeftDrive.getCurrentPosition(), err) != 0 &&
-                deadZone(backRightDrive.getTargetPosition() - backRightDrive.getCurrentPosition(), err) != 0;
     }
 }
