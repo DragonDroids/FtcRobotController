@@ -24,19 +24,23 @@ public class MeepMeepTesting {
                 // Set constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width 7, 35
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-30,-60,Math.toRadians(90)))
+                        drive.trajectorySequenceBuilder(new Pose2d(-30, 60, Math.toRadians(270)))
+                                // Gives space from wall
                                 .forward(6)
-                                .turn(Math.toRadians(140))
+                                // Turns to face Alliance Shipping Hub
+                                .turn(-Math.toRadians(147.5))
+                                // Backs into Hub
                                 .back(25)
+                                // Backs into Hub more
                                 .back(5)
                                 .forward(10)
-                                .turn(-Math.toRadians(50))
-                                .forward(38)
-                                .turn(Math.toRadians(90))
-                                .forward(14)
-                                .back(7)
-                                .turn(-Math.toRadians(90))
-                                .back(100)
+                                .forward(22)
+                                .turn(Math.toRadians(57.5))
+                                .forward(13)
+                                .back(25)
+                                .back(25)
+                                .splineTo(new Vector2d(12,46.5), 0)
+                                .back(65)
                                 .build()
                 )
                 .start();

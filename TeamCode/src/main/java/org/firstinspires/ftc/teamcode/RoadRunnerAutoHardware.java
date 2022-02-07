@@ -28,6 +28,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -76,7 +79,8 @@ public class RoadRunnerAutoHardware extends TankDrive {
     private final List<DcMotorEx> motors;
     private final List<DcMotorEx> leftMotors;
     private final List<DcMotorEx> rightMotors;
-    private final BNO055IMU imu;
+    public final BNO055IMU imu;
+    public BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
 
     private final VoltageSensor batteryVoltageSensor;
 
@@ -88,6 +92,7 @@ public class RoadRunnerAutoHardware extends TankDrive {
     public Servo armClamp = null;
     public DcMotor armLift = null;
     public DcMotor carouselSpinner = null;
+    public double turnRatio = 1 / 0.9024911538148539;
 
     public RoadRunnerAutoHardware(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH);
@@ -105,7 +110,6 @@ public class RoadRunnerAutoHardware extends TankDrive {
 
         // TODO: adjust the names of the following hardware devices to match your configuration
         imu = hardwareMap.get(BNO055IMU.class, "imu");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
@@ -351,5 +355,9 @@ public class RoadRunnerAutoHardware extends TankDrive {
 
     public void openArm() {
         armClamp.setPosition(1);
+    }
+
+    public double getAngle() {
+        return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
     }
 }

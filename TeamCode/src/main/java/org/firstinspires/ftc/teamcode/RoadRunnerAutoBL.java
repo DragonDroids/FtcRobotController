@@ -73,17 +73,11 @@ public class RoadRunnerAutoBL extends LinearOpMode {
         // Blue Carousel
         RoadRunnerAutoHardware drive = new RoadRunnerAutoHardware(hardwareMap);
 
-        initVuforia();
-        initTfod();
-        if (tfod != null) {
-            tfod.activate();
-            tfod.setZoom(1.3, 16.0/9.0);
-        }
-
+        TensorFlow tensorFlow = new TensorFlow(hardwareMap);
         // Declare positions variables
         char positionDetected = 'N';
         while (positionDetected == 'N' && (opModeIsActive() || !isStopRequested())) {
-            positionDetected = detectPosition();
+            positionDetected = tensorFlow.detectPosition(telemetry);
             sleep(10);
         }
 
@@ -111,6 +105,7 @@ public class RoadRunnerAutoBL extends LinearOpMode {
                 .build();
 
         // Moves Closer To Hub
+
         TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
                 // Backs into Hub more
                 .back(5)
@@ -127,9 +122,7 @@ public class RoadRunnerAutoBL extends LinearOpMode {
                 .build();
 
         TrajectorySequence trajectorySequence4 = drive.trajectorySequenceBuilder(trajectorySequence3.end())
-                .back(25)
-                .turn(Math.toRadians(10))
-                .back(25)
+                .back(50)
                 .splineTo(new Vector2d(12,46.5), 0)
                 .build();
 

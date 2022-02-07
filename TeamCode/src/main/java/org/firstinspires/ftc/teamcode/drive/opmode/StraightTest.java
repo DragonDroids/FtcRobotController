@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.drive.SampleTankDrive;
 @Config
 
 @Autonomous(group = "drive")
-@Disabled
+
 public class StraightTest extends LinearOpMode {
     public static double DISTANCE = 60; // in
 

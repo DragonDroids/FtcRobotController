@@ -68,17 +68,12 @@ public class RoadRunnerAutoRR extends LinearOpMode {
         // Red Carousel
         RoadRunnerAutoHardware drive = new RoadRunnerAutoHardware(hardwareMap);
 
-        initVuforia();
-        initTfod();
-        if (tfod != null) {
-            tfod.activate();
-            tfod.setZoom(1.3, 16.0/9.0);
-        }
+        TensorFlow tensorflow = new TensorFlow(hardwareMap);
 
         // Declare positions variables
         char positionDetected = 'N';
         while (positionDetected == 'N' && (opModeIsActive() || !isStopRequested())) {
-            positionDetected = detectPosition();
+            positionDetected = tensorflow.detectPosition(telemetry);
             sleep(10);
         }
 
