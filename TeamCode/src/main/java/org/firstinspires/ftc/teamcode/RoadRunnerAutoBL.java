@@ -73,72 +73,64 @@ public class RoadRunnerAutoBL extends LinearOpMode {
         // Blue Carousel
         RoadRunnerAutoHardware drive = new RoadRunnerAutoHardware(hardwareMap);
 
-        TensorFlow tensorFlow = new TensorFlow(hardwareMap);
+        TensorFlow tensorflow = new TensorFlow(hardwareMap);
+
         // Declare positions variables
-        char positionDetected = 'N';
-        while (positionDetected == 'N' && (opModeIsActive() || !isStopRequested())) {
-            positionDetected = tensorFlow.detectPosition(telemetry);
+        char positionDetected = 'L';
+        while (!opModeIsActive()) {
+            positionDetected = tensorflow.detectPosition(telemetry);
+            positionDetected = positionDetected == 'N' ? 'L' : positionDetected;
             sleep(10);
+            telemetry.addData("Pos Detected: ", positionDetected);
+            telemetry.update();
         }
 
-        telemetry.addData("Pos Detected: ", positionDetected);
-        telemetry.update();
-
         int index = "RCL".indexOf(positionDetected);
-
         if (isStopRequested()) return;
 
         waitForStart();
 
+
         sleep(1000);
 
-        drive.setPoseEstimate(new Pose2d(-30,60,Math.toRadians(270)));
+        drive.setPoseEstimate(new Pose2d(-30, 60, Math.toRadians(270)));
 
         // Turns and moves to Hub
-        TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(-30,60,Math.toRadians(270)))
+        TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(-30, 60, Math.toRadians(270)))
                 // Gives space from wall
                 .forward(6)
                 // Turns to face Alliance Shipping Hub
-                .turn(-Math.toRadians(140))
+                .turn(-Math.toRadians(135))
                 // Backs into Hub
-                .back(25)
+                .back(22)
                 .build();
 
         // Moves Closer To Hub
-
         TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
                 // Backs into Hub more
                 .back(5)
                 .build();
 
         TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(trajectorySequence1.end())
-                .forward(10)
-                .build();
-
-        TrajectorySequence trajectorySequence3 = drive.trajectorySequenceBuilder(trajectorySequence2.end())
-                .forward(22)
-                .turn(Math.toRadians(50))
                 .forward(13)
                 .build();
 
-        TrajectorySequence trajectorySequence4 = drive.trajectorySequenceBuilder(trajectorySequence3.end())
-                .back(50)
-                .splineTo(new Vector2d(12,46.5), 0)
-                .build();
-
-        TrajectorySequence trajectorySequence5 = drive.trajectorySequenceBuilder(trajectorySequence4.end())
-                .back(65)
+        TrajectorySequence trajectorySequence3 = drive.trajectorySequenceBuilder(trajectorySequence2.end())
+                .forward(18)
+                .turn(Math.toRadians(50))
+                .forward(13)
                 .build();
 
         drive.followTrajectorySequence(trajectorySequence0);
 
         drive.armLift.setTargetPosition(armPositions[index]);
         drive.armLift.setPower(0.75);
-        while (drive.armLift.isBusy() && opModeIsActive()) {}
+        while (drive.armLift.isBusy() && opModeIsActive()) {
+        }
         drive.followTrajectorySequence(trajectorySequence1);
         if (armPositions[index] == -575) {
             drive.armClamp.setPosition(0.0);
-        } else if(armPositions[index] != 0) {
+        } else if (armPositions[index] != 0) {
             drive.armClamp.setPosition(1.0);
         }
 
@@ -150,87 +142,27 @@ public class RoadRunnerAutoBL extends LinearOpMode {
 
         drive.armLift.setTargetPosition(0);
         drive.armLift.setPower(0.75);
-        while (drive.armLift.isBusy() && opModeIsActive()) {}
+        while (drive.armLift.isBusy() && opModeIsActive()) {
+        }
 
         drive.followTrajectorySequence(trajectorySequence3);
 
         drive.carouselSpinner.setPower(0.65);
 
-        sleep(2100);
+        sleep(2500);
 
         drive.carouselSpinner.setPower(0.0);
 
+        TrajectorySequence trajectorySequence4 = drive.trajectorySequenceBuilder(trajectorySequence3.end())
+                .back(10)
+                .turn(-Math.toRadians(180 - drive.getAngle()))
+                .forward(18)
+                .turn(-Math.toRadians(90))
+                .forward(25)
+                .build();
+
         drive.followTrajectorySequence(trajectorySequence4);
 
-        DriveConstants.MAX_ACCEL = 110;
-        drive.followTrajectorySequence(trajectorySequence5);
-        DriveConstants.MAX_ACCEL = 90;
-
         telemetry.addData("Run", "Done!");
-    }
-
-    private void initVuforia() {
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = hardwareMap.get(WebcamName.class, "ddcam");
-
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-    }
-
-    private void initTfod() {
-        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minResultConfidence = 0.9f;
-        tfodParameters.isModelTensorFlow2 = true;
-        tfodParameters.inputSize = 320;
-        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
-    }
-
-    @SuppressLint("DefaultLocale")
-    private char detectPosition() {
-        int pos = 3;
-        List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-        if (updatedRecognitions != null) {
-            if (debugMode) {
-                telemetry.addData("# Object Detected", updatedRecognitions.size());
-            }
-            // step through the list of recognitions and display boundary info.
-            int i = 0;
-            for (Recognition recognition : updatedRecognitions) {
-                if (debugMode) {
-                    telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                    telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                            recognition.getLeft(), recognition.getTop());
-                    telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                            recognition.getRight(), recognition.getBottom());
-                }
-                i++;
-
-                int centerX = Math.round(recognition.getLeft() + (recognition.getWidth() / 2));
-
-                int width = 800;
-
-                if (centerX >= 0 && centerX < width / 3) {
-                    pos = 0;
-                } else if (centerX >= width / 3 && centerX < 2 * width / 3) {
-                    pos = 1;
-                } else if (centerX >= 2 * width / 3 && centerX <= width) {
-                    pos = 2;
-                }
-            }
-            if (debugMode) {
-                telemetry.update();
-            }
-        }
-
-        if (debugMode) {
-            telemetry.addData("Element Pos", pos);
-            telemetry.update();
-        }
-
-        return POSITION_KEY[pos];
     }
 }

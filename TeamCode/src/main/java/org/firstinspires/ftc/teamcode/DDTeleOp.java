@@ -44,7 +44,7 @@ public class DDTeleOp extends LinearOpMode {
     HardwarePushbot robot = new HardwarePushbot();
 
     int[] positions = {
-            -575, // High Position
+            -587, // High Position
             -360, // Middle Position
             0,    // Reset Position (Bottom)
     };
@@ -103,9 +103,15 @@ public class DDTeleOp extends LinearOpMode {
                 robot.motorTest.setPower(0);
             }
 
+            int sensitivity = 1;
+
+            if (gamepad1.left_trigger > 0.1) {
+                sensitivity = 2;
+            }
+
             // Calculate the left and right powers to apply to the motors based on joystick
-            double leftPower = (-gamepad1.left_stick_y + gamepad1.left_stick_x) * robot.speed;
-            double rightPower = (-gamepad1.left_stick_y - gamepad1.left_stick_x) * robot.speed;
+            double leftPower = (-gamepad1.left_stick_y + gamepad1.left_stick_x / sensitivity) * robot.speed;
+            double rightPower = (-gamepad1.left_stick_y - gamepad1.left_stick_x / sensitivity) * robot.speed;
 
             // Spin carousel in specified direction, based on joystick
             if (gamepad1.right_stick_x > 0) {
@@ -130,9 +136,8 @@ public class DDTeleOp extends LinearOpMode {
             }
 
             // Rotate drop-off box based on bumper
-            if (gamepad2.right_bumper) {
-                robot.armGripper.setPosition(0.5);
-            } else if (gamepad2.left_bumper && currentHeight != 0) {
+
+            if ((gamepad2.left_bumper || gamepad2.right_bumper) && currentHeight != 0) {
                 if (currentHeight == -575) {
                     robot.armGripper.setPosition(0.0);
                 } else {

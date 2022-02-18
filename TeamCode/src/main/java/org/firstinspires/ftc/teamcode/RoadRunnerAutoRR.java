@@ -24,9 +24,9 @@ import java.util.List;
 @Autonomous(name="Red Carousel", group = "drive")
 public class RoadRunnerAutoRR extends LinearOpMode {
     public int[] armPositions = {
-            -575, // High Position
-            -360, // Middle Position
             -320, // Low Position
+            -360, // Middle Position
+            -575, // High Position
     };
 
     /*
@@ -71,14 +71,14 @@ public class RoadRunnerAutoRR extends LinearOpMode {
         TensorFlow tensorflow = new TensorFlow(hardwareMap);
 
         // Declare positions variables
-        char positionDetected = 'N';
-        while (positionDetected == 'N' && (opModeIsActive() || !isStopRequested())) {
+        char positionDetected = 'L';
+        while (!opModeIsActive()) {
             positionDetected = tensorflow.detectPosition(telemetry);
+            positionDetected = positionDetected == 'N' ? 'L' : positionDetected;
             sleep(10);
+            telemetry.addData("Pos Detected: ", positionDetected);
+            telemetry.update();
         }
-
-        telemetry.addData("Pos Detected: ", positionDetected);
-        telemetry.update();
 
         int index = "RCL".indexOf(positionDetected);
 
@@ -92,31 +92,29 @@ public class RoadRunnerAutoRR extends LinearOpMode {
 
         TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(-30,-60,Math.toRadians(90)))
                 .forward(6)
-                .turn(Math.toRadians(165))
+                .turn(Math.toRadians(152))
                 .back(15)
                 .build();
 
         TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
-                .back(9)
+                .back(4)
                 .build();
 
         TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(trajectorySequence1.end())
-                .forward(5)
+                .forward(8)
                 .build();
 
         TrajectorySequence trajectorySequence3 = drive.trajectorySequenceBuilder(trajectorySequence2.end())
                 .forward(5)
-                .turn(-Math.toRadians(85))
+                .turn(-Math.toRadians(60))
                 .forward(35)
-                .turn(Math.toRadians(115))
-                .forward(18)
+                .back(6)
+                .turn(Math.toRadians(90))
+                .forward(5)
                 .build();
 
         TrajectorySequence trajectorySequence4 = drive.trajectorySequenceBuilder(trajectorySequence3.end())
-                .back(13)
-                .turn(Math.toRadians(115))
-                .back(15)
-                .forward(140)
+                .back(20.5)
                 .build();
 
         drive.followTrajectorySequence(trajectorySequence0);
@@ -145,9 +143,13 @@ public class RoadRunnerAutoRR extends LinearOpMode {
 
         drive.followTrajectorySequence(trajectorySequence3);
 
-        drive.carouselSpinner.setPower(0.65);
+        drive.carouselSpinner.setPower(-0.65);
 
-        sleep(2000);
+        sleep(2250);
+
+        drive.carouselSpinner.setPower(-0.8);
+
+        sleep(1000);
 
         drive.carouselSpinner.setPower(0.0);
 

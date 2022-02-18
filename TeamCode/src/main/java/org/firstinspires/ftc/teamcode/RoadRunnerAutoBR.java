@@ -28,7 +28,7 @@ import java.util.List;
 public class RoadRunnerAutoBR extends LinearOpMode {
     public int[] armPositions = {
             -320, // Bottom Position
-            -450, // Middle Positionm
+            -400, // Middle Positionm
             -575, // High Position
     };
 
@@ -73,32 +73,28 @@ public class RoadRunnerAutoBR extends LinearOpMode {
         // Blue Near Warehouse
         RoadRunnerAutoHardware drive = new RoadRunnerAutoHardware(hardwareMap);
 
-        initVuforia();
-        initTfod();
-        if (tfod != null) {
-            tfod.activate();
-            tfod.setZoom(1.3, 16.0/9.0);
-        }
+        TensorFlow tensorflow = new TensorFlow(hardwareMap);
 
         // Declare positions variables
-        char positionDetected = 'N';
-        while (positionDetected == 'N' && (opModeIsActive() || !isStopRequested())) {
-            positionDetected = detectPosition();
+        char positionDetected = 'L';
+        while (!opModeIsActive()) {
+            positionDetected = tensorflow.detectPosition(telemetry);
+            positionDetected = positionDetected == 'N' ? 'L' : positionDetected;
             sleep(10);
+            telemetry.addData("Pos Detected: ", positionDetected);
+            telemetry.update();
         }
 
         telemetry.addData("Pos Detected: ", positionDetected);
-        // telemetry.update();
+        telemetry.update();
 
         int index = "RCL".indexOf(positionDetected);
-
 
         waitForStart();
 
         if (isStopRequested()) return;
 
-
-        sleep(1000);
+        sleep(500);
 
 
         drive.setPoseEstimate(new Pose2d(12,61,Math.toRadians(270)));
@@ -106,15 +102,15 @@ public class RoadRunnerAutoBR extends LinearOpMode {
         TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(12,61,Math.toRadians(270)))
                 .forward(6)
                 .turn(Math.toRadians(158))
-                .back(18)
+                .back(16)
                 .build();
 
         TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
-                .forward(10)
+                .forward(13 - (index == 2 ? 2 : 0))
                 .build();
 
         TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(trajectorySequence1.end())
-                .back(1 + ((index % 2) * 9))
+                .back(1 + ((index % 2) * 5))
                 .build();
 
         TrajectorySequence trajectorySequence3 = drive.trajectorySequenceBuilder(trajectorySequence1.end())

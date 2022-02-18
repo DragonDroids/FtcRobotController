@@ -81,21 +81,21 @@ public class RoadRunnerAutoRL extends LinearOpMode {
         }
 
         // Declare positions variables
-        char positionDetected = 'N';
-        int i = 0;
-        while (positionDetected == 'N' && (opModeIsActive() || !isStopRequested())) {
-            if (i < 500) {
-                positionDetected = detectPosition();
-                telemetry.addData("Iteration", i);
-                telemetry.update();
-                sleep(10);
-                i++;
-            } else {
-                positionDetected = 'L';
-                break;
-            }
-
-        }
+        char positionDetected = 'L';
+//        int i = 0;
+//        while (!opModeIsActive()) {
+//            if (i < 500) {
+//                positionDetected = detectPosition();
+//                telemetry.addData("Iteration", i);
+//                telemetry.update();
+//                sleep(10);
+//                i++;
+//            } else {
+//                positionDetected = 'L';
+//                break;
+//            }
+//
+//        }
 
 
 
@@ -103,7 +103,6 @@ public class RoadRunnerAutoRL extends LinearOpMode {
         // telemetry.update();
 
         int index = "RCL".indexOf(positionDetected);
-
 
         waitForStart();
 
@@ -115,12 +114,12 @@ public class RoadRunnerAutoRL extends LinearOpMode {
 
             TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(12,61,Math.toRadians(270)))
                     .forward(6)
-                    .turn(-Math.toRadians(155))
+                    .turn(-Math.toRadians(150))
                     .back(15)
                     .build();
 
             TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
-                    .forward(8)
+                    .forward(10)
                     .build();
 
             TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(trajectorySequence1.end())
