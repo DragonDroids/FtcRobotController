@@ -50,6 +50,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksTo
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
+import org.firstinspires.ftc.teamcode.T265Localizer;
 
 /*
  * Simple tank drive hardware implementation for REV hardware.
@@ -93,6 +94,8 @@ public class RoadRunnerAutoHardware extends TankDrive {
     public DcMotor armLift = null;
     public DcMotor carouselSpinner = null;
     public double turnRatio = 1 / 0.9024911538148539;
+
+    public T265Localizer t265Localizer = null;
 
     public RoadRunnerAutoHardware(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH);
@@ -149,6 +152,9 @@ public class RoadRunnerAutoHardware extends TankDrive {
 
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
+
+        t265Localizer = new T265Localizer(hardwareMap);
+        setLocalizer(t265Localizer);
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(follower, HEADING_PID);
         armClamp = hardwareMap.get(Servo.class, "armClamp");
