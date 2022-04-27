@@ -22,18 +22,22 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
+import org.firstinspires.ftc.teamcode.util.AxesSigns;
+import org.firstinspires.ftc.teamcode.util.BNO055IMUUtil;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
 
 import java.util.Arrays;
@@ -50,13 +54,13 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksTo
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
-import org.firstinspires.ftc.teamcode.T265Localizer;
+import org.firstinspires.ftc.teamcode.util.Localizers.T265Localizer;
 
 /*
  * Simple tank drive hardware implementation for REV hardware.
  */
 @Config
-public class RoadRunnerAutoHardware extends TankDrive {
+public class Drive extends TankDrive {
     public int[] armPositions = {
             -320, // Bottom Position
             -360, // Middle Position
@@ -89,15 +93,21 @@ public class RoadRunnerAutoHardware extends TankDrive {
     private String frontRightName = "frontRight";
     private String backLeftName = "backLeft";
     private String backRightName = "backRight";
+    private String motorTestName = "motorTest";
 
     public Servo armClamp = null;
     public DcMotor armLift = null;
     public DcMotor carouselSpinner = null;
+    public DcMotor motorTest = null;
     public double turnRatio = 1 / 0.9024911538148539;
+    public double speed = 0.5;
+    final double maxSpeed = 1;
+    final double minSpeed = 0.5;
+    final boolean variableSpeed = true;
 
     public T265Localizer t265Localizer = null;
 
-    public RoadRunnerAutoHardware(HardwareMap hardwareMap) {
+    public Drive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH);
 
         follower = new TankPIDVAFollower(AXIAL_PID, CROSS_TRACK_PID,
@@ -118,7 +128,7 @@ public class RoadRunnerAutoHardware extends TankDrive {
 
         // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
         // upward (normal to the floor) using a command like the following:
-        // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
+         BNO055IMUUtil.remapAxes(imu, AxesOrder.ZYX, AxesSigns.PNP);
 
         // add/remove motors depending on your robot (e.g., 6WD)
         DcMotorEx leftFront = hardwareMap.get(DcMotorEx.class, frontLeftName);
@@ -154,7 +164,7 @@ public class RoadRunnerAutoHardware extends TankDrive {
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
 
         t265Localizer = new T265Localizer(hardwareMap);
-        setLocalizer(t265Localizer);
+//        setLocalizer(t265Localizer);
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(follower, HEADING_PID);
         armClamp = hardwareMap.get(Servo.class, "armClamp");
@@ -165,6 +175,7 @@ public class RoadRunnerAutoHardware extends TankDrive {
         armClamp.setPosition(0.5);
         carouselSpinner = hardwareMap.get(DcMotor.class, "carousel");
         carouselSpinner.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorTest = hardwareMap.get(DcMotor.class, motorTestName);
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
@@ -365,5 +376,25 @@ public class RoadRunnerAutoHardware extends TankDrive {
 
     public double getAngle() {
         return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+    }
+
+    public void getMovementSpeed(Gamepad gamepad) {
+        if (variableSpeed) {
+            speed = minSpeed + (gamepad.right_trigger * (maxSpeed - minSpeed));
+        } else {
+            speed = gamepad.right_bumper ? maxSpeed : minSpeed;
+        }
+    }
+
+    public void debug(boolean deb, Telemetry tel, Pose2d goal) {
+        if (deb) {
+            tel.addData("Position", getPoseEstimate());
+            tel.addData("Move Speed", speed);
+            tel.addData("Viper Slide Position: ", armLift.getCurrentPosition());
+            tel.addData("Current Robot Angle: ", getAngle());
+            tel.addData("Is Busy", isBusy());
+            tel.addData("Goal", goal.toString());
+            tel.update();
+        }
     }
 }

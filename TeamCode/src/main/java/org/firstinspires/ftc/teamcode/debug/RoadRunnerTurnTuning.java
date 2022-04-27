@@ -1,10 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.debug;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.Drive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 /*
@@ -18,7 +19,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 public class RoadRunnerTurnTuning extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        RoadRunnerAutoHardware drive = new RoadRunnerAutoHardware(hardwareMap);
+        Drive drive = new Drive(hardwareMap);
 
         drive.setPoseEstimate(new Pose2d(-30,60,Math.toRadians(270)));
 

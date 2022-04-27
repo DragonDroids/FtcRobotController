@@ -28,13 +28,22 @@ android {
     }
 }
 
+repositories {
+    // Add this line
+    maven { url = "https://maven.0x778.tk" }
+}
+
 dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
+    // There should be a bunch of implementation configurations here already
+
     implementation 'org.ftclib.ftclib:vision:1.2.0'
     implementation 'org.ftclib.ftclib:core:1.2.1'
 
     implementation 'org.apache.commons:commons-math3:3.6.1'
 
     implementation 'com.acmerobotics.roadrunner:core:0.5.5'
+
+    implementation 'com.spartronics4915.lib:ftc265:2.1.9'
 }

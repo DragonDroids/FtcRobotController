@@ -27,10 +27,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TeleOp;
 
+import androidx.annotation.RequiresPermission;
+
+import com.acmerobotics.roadrunner.control.PIDFController;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.teamcode.Drive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.util.ReadJSON;
+import org.firstinspires.ftc.teamcode.util.SaveJSON;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /*
     Dragon Droids Team #19643
@@ -41,7 +52,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 public class DDTeleOp extends LinearOpMode {
     // Initialize robot parameters
-    HardwarePushbot robot = new HardwarePushbot();
+    Drive robot = null;
 
     int[] positions = {
             -587, // High Position
@@ -49,14 +60,31 @@ public class DDTeleOp extends LinearOpMode {
             0,    // Reset Position (Bottom)
     };
 
-
     @Override
     public void runOpMode() throws InterruptedException {
         // Make sure your ID's match your configuration
-        robot.init(hardwareMap);
+        robot = new Drive(hardwareMap);
+        String side = "n/a";
 
         // Wait for the Start Button
         waitForStart();
+
+        JSONObject storedPos;
+
+        Pose2d begin;
+
+        try {
+            ReadJSON readJSON = new ReadJSON("position.json");
+            storedPos = new JSONObject(readJSON.value);
+            begin = new Pose2d(storedPos.getDouble("x"), storedPos.getDouble("y"), storedPos.getDouble("heading"));
+            robot.setPoseEstimate(begin);
+            telemetry.addData("Position Data Retrieval", "Succeeded");
+            side = begin.getY() > 0 ? "blue" : "red";
+        } catch (JSONException e) {
+            telemetry.addData("Position Data Retrieval", "Failed");
+            telemetry.addData("Error", e.getMessage());
+        }
+        telemetry.update();
 
         // If the user stops the program, cancel the OpMode loop
         if (isStopRequested()) return;
@@ -68,7 +96,22 @@ public class DDTeleOp extends LinearOpMode {
 
         int currentHeight = 0;
 
+        PIDFController headingController = new PIDFController(Drive.HEADING_PID);
+
+        headingController.setInputBounds(-Math.PI, Math.PI);
+
+        Pose2d goal = new Pose2d(0,0,0);
+
+        if (side.equals("blue")) {
+            goal = new Pose2d(-11, 22.75, 0);
+        } else if (side.equals("red")) {
+            goal = new Pose2d(-11, -24.5, 0);
+        }
+
+        int distanceToAlign = 23; // (inches)
+
         while (opModeIsActive()) {
+            robot.update();
             // If variable speed is required, apply it
             robot.getMovementSpeed(gamepad1);
 
@@ -90,7 +133,7 @@ public class DDTeleOp extends LinearOpMode {
                 armSpeed = armSpeedMove;
                 robot.armLift.setTargetPosition(armTarget);
                 robot.armLift.setPower(armSpeed);
-                robot.armGripper.setPosition(0.5);
+                robot.armClamp.setPosition(0.5);
                 currentHeight = positions[2];
             }
 
@@ -109,17 +152,29 @@ public class DDTeleOp extends LinearOpMode {
                 sensitivity = 2;
             }
 
+            // Turn to aim at
+            if (gamepad1.right_bumper && !robot.isBusy()) {
+                headingController.setTargetPosition((Math.atan2(goal.minus(robot.getPoseEstimate()).getY(), goal.minus(robot.getPoseEstimate()).getX()) - robot.getPoseEstimate().getHeading() + Math.PI) % (2 * Math.PI));
+                headingController.update(robot.getPoseEstimate().getHeading());
+                double distC = Math.hypot(goal.getX() - robot.getPoseEstimate().getX(), goal.getY() - robot.getPoseEstimate().getY());
+                TrajectorySequence alignTo = robot.trajectorySequenceBuilder(robot.getPoseEstimate())
+                        .turn(headingController.getTargetPosition() % (2*Math.PI))
+                        .back(distC - distanceToAlign)
+                        .build();
+                robot.followTrajectorySequenceAsync(alignTo);
+            }
+
             // Calculate the left and right powers to apply to the motors based on joystick
             double leftPower = (-gamepad1.left_stick_y + gamepad1.left_stick_x / sensitivity) * robot.speed;
             double rightPower = (-gamepad1.left_stick_y - gamepad1.left_stick_x / sensitivity) * robot.speed;
 
             // Spin carousel in specified direction, based on joystick
             if (gamepad1.right_stick_x > 0) {
-                robot.carousel.setPower(-carouselSpeed);
+                robot.carouselSpinner.setPower(-carouselSpeed);
             } else if (gamepad1.right_stick_x < 0) {
-                robot.carousel.setPower(carouselSpeed);
+                robot.carouselSpinner.setPower(carouselSpeed);
             } else {
-                robot.carousel.setPower(0.0);
+                robot.carouselSpinner.setPower(0.0);
             }
 
             // Fine-adjust Arm Lift, based on trigger
@@ -139,20 +194,36 @@ public class DDTeleOp extends LinearOpMode {
 
             if ((gamepad2.left_bumper || gamepad2.right_bumper) && currentHeight != 0) {
                 if (currentHeight == -575) {
-                    robot.armGripper.setPosition(0.0);
+                    robot.armClamp.setPosition(0.0);
                 } else {
-                    robot.armGripper.setPosition(1.0);
+                    robot.armClamp.setPosition(1.0);
                 }
             }
 
-            // Apply calculated powers to the robot
-            robot.leftPower = leftPower;
-            robot.rightPower = rightPower;
+            if (gamepad1.left_bumper) {
+                goal = robot.getPoseEstimate();
+            }
 
-            robot.setMoveMotors();
+            // Apply calculated powers to the robot
+            if (!robot.isBusy()) {
+                robot.setMotorPowers(leftPower, rightPower);
+            }
 
             // Add data to telemetry, for debugging
-            robot.debug(true, telemetry);
+            robot.debug(true, telemetry, goal);
         }
+
+        JSONObject position = new JSONObject();
+
+        try {
+            position.put("x", robot.getPoseEstimate().getX());
+            position.put("y", robot.getPoseEstimate().getY());
+            position.put("heading", robot.getPoseEstimate().getHeading());
+            new SaveJSON("position.json", position.toString());
+            telemetry.addData("Position Save", "Succeeded");
+        } catch (Exception e) {
+            telemetry.addData("Position Save", "Failed");
+        }
+        telemetry.update();
     }
 }

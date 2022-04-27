@@ -6,11 +6,11 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.MovingStatistics;
 
 import org.firstinspires.ftc.robotcore.internal.system.Misc;
+import org.firstinspires.ftc.teamcode.util.Localizers.T265Localizer;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleTankDrive;
 
@@ -26,11 +26,13 @@ import org.firstinspires.ftc.teamcode.drive.SampleTankDrive;
 @Config
 
 @Autonomous(group = "drive")
-@Disabled
+//@Disabled
 public class TrackWidthTuner extends LinearOpMode {
     public static double ANGLE = 180; // deg
     public static int NUM_TRIALS = 5;
     public static int DELAY = 1000; // ms
+
+    public T265Localizer t265Localizer = null;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -39,6 +41,9 @@ public class TrackWidthTuner extends LinearOpMode {
         SampleTankDrive drive = new SampleTankDrive(hardwareMap);
         // TODO: if you haven't already, set the localizer to something that doesn't depend on
         // drive encoders for computing the heading
+
+//        t265Localizer = new T265Localizer(hardwareMap);
+//        drive.setLocalizer(t265Localizer);
 
         telemetry.addLine("Press play to begin the track width tuner routine");
         telemetry.addLine("Make sure your robot has enough clearance to turn smoothly");
@@ -72,6 +77,12 @@ public class TrackWidthTuner extends LinearOpMode {
 
             double trackWidth = DriveConstants.TRACK_WIDTH * Math.toRadians(ANGLE) / headingAccumulator;
             trackWidthStats.add(trackWidth);
+
+//            telemetry.addLine("Tuning complete");
+//            telemetry.addLine(Misc.formatInvariant("Effective track width = %.2f (SE = %.3f)",
+//                    trackWidthStats.getMean(),
+//                    trackWidthStats.getStandardDeviation() / Math.sqrt(NUM_TRIALS)));
+//            telemetry.update();
 
             sleep(DELAY);
         }

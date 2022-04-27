@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Autonomous;
 
 import android.annotation.SuppressLint;
 
@@ -12,8 +12,11 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.Drive;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.util.SaveJSON;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -71,7 +74,7 @@ public class RoadRunnerAutoRL extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // Red Near Warehouse
-        RoadRunnerAutoHardware drive = new RoadRunnerAutoHardware(hardwareMap);
+        Drive drive = new Drive(hardwareMap);
 
         initVuforia();
         initTfod();
@@ -158,7 +161,7 @@ public class RoadRunnerAutoRL extends LinearOpMode {
         } else {
             TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(0,0, 0))
                     .forward(15)
-                    .turn(-Math.toRadians(95))
+                    .turn(-Math.toRadians(90))
                     .forward(30)
                     .turn(Math.toRadians(180))
                     .build();
@@ -166,6 +169,19 @@ public class RoadRunnerAutoRL extends LinearOpMode {
             drive.followTrajectorySequence(trajectorySequence0);
             DriveConstants.MAX_ACCEL = 90;
         }
+
+        JSONObject position = new JSONObject();
+
+        try {
+            position.put("x", drive.getPoseEstimate().getX());
+            position.put("y", drive.getPoseEstimate().getY());
+            position.put("heading", drive.getPoseEstimate().getHeading());
+            new SaveJSON("position.json", position.toString());
+            telemetry.addData("Position", "Succeeded");
+        } catch (Exception e) {
+            telemetry.addData("Position", "Failed");
+        }
+        telemetry.update();
 
         telemetry.addData("Run", "Done!");
         telemetry.update();

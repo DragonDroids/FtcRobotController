@@ -1,22 +1,17 @@
-package org.firstinspires.ftc.teamcode;
-
-import android.annotation.SuppressLint;
+package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.teamcode.drive.DriveConstants;
+import org.firstinspires.ftc.teamcode.Drive;
+import org.firstinspires.ftc.teamcode.dev.TensorFlow;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-
-import java.util.List;
+import org.firstinspires.ftc.teamcode.util.SaveJSON;
+import org.json.JSONObject;
 
 /*
     Dragon Droids Team #19643
@@ -71,7 +66,7 @@ public class RoadRunnerAutoBL extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // Blue Carousel
-        RoadRunnerAutoHardware drive = new RoadRunnerAutoHardware(hardwareMap);
+        Drive drive = new Drive(hardwareMap);
 
         TensorFlow tensorflow = new TensorFlow(hardwareMap);
 
@@ -163,6 +158,20 @@ public class RoadRunnerAutoBL extends LinearOpMode {
 
         drive.followTrajectorySequence(trajectorySequence4);
 
+        JSONObject position = new JSONObject();
+
+        try {
+            position.put("x", drive.getPoseEstimate().getX());
+            position.put("y", drive.getPoseEstimate().getY());
+            position.put("heading", drive.getPoseEstimate().getHeading());
+            new SaveJSON("position.json", position.toString());
+            telemetry.addData("Position", "Succeeded");
+        } catch (Exception e) {
+            telemetry.addData("Position", "Failed");
+        }
+        telemetry.update();
+
         telemetry.addData("Run", "Done!");
+        telemetry.update();
     }
 }
