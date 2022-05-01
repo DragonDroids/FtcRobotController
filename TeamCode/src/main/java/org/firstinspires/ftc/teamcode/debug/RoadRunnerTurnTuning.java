@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 public class RoadRunnerTurnTuning extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        Drive drive = new Drive(hardwareMap);
+        Drive drive = new Drive(hardwareMap, false);
 
         drive.setPoseEstimate(new Pose2d(-30,60,Math.toRadians(270)));
 

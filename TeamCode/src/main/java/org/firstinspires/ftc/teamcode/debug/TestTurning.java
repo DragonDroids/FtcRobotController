@@ -20,7 +20,7 @@ import org.opencv.core.Mat;
 public class TestTurning extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        Drive drive = new Drive(hardwareMap);
+        Drive drive = new Drive(hardwareMap, false);
 
 
 

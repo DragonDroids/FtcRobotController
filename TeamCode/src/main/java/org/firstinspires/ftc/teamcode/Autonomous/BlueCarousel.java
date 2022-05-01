@@ -15,13 +15,13 @@ import org.json.JSONObject;
 
 /*
     Dragon Droids Team #19643
-    RoadRunnerAutoBL
+    Blue Carousel
 */
 
 @Config
 
 @Autonomous(name="Blue Carousel", group = "drive")
-public class RoadRunnerAutoBL extends LinearOpMode {
+public class BlueCarousel extends LinearOpMode {
     public int[] armPositions = {
             -320, // Bottom Position
             -360, // Middle Position
@@ -66,7 +66,7 @@ public class RoadRunnerAutoBL extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // Blue Carousel
-        Drive drive = new Drive(hardwareMap);
+        Drive drive = new Drive(hardwareMap, true);
 
         TensorFlow tensorflow = new TensorFlow(hardwareMap);
 
@@ -90,8 +90,15 @@ public class RoadRunnerAutoBL extends LinearOpMode {
 
         drive.setPoseEstimate(new Pose2d(-30, 60, Math.toRadians(270)));
 
+        drive.updatePoseEstimate();
+
+        telemetry.addData("Pose Estimate", drive.getPoseEstimate());
+        telemetry.update();
+
+        sleep(3000);
+
         // Turns and moves to Hub
-        TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(-30, 60, Math.toRadians(270)))
+        TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 // Gives space from wall
                 .forward(6)
                 // Turns to face Alliance Shipping Hub
@@ -100,28 +107,19 @@ public class RoadRunnerAutoBL extends LinearOpMode {
                 .back(22)
                 .build();
 
-        // Moves Closer To Hub
-        TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
-                // Backs into Hub more
-                .back(5)
-                .build();
-
-        TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(trajectorySequence1.end())
-                .forward(13)
-                .build();
-
-        TrajectorySequence trajectorySequence3 = drive.trajectorySequenceBuilder(trajectorySequence2.end())
-                .forward(18)
-                .turn(Math.toRadians(50))
-                .forward(13)
-                .build();
-
         drive.followTrajectorySequence(trajectorySequence0);
 
         drive.armLift.setTargetPosition(armPositions[index]);
         drive.armLift.setPower(0.75);
         while (drive.armLift.isBusy() && opModeIsActive()) {
         }
+
+        // Moves Closer To Hub
+        TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                // Backs into Hub more
+                .back(5)
+                .build();
+
         drive.followTrajectorySequence(trajectorySequence1);
         if (armPositions[index] == -575) {
             drive.armClamp.setPosition(0.0);
@@ -133,12 +131,23 @@ public class RoadRunnerAutoBL extends LinearOpMode {
 
         drive.armClamp.setPosition(0.5);
 
+
+        TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                .forward(13)
+                .build();
+
         drive.followTrajectorySequence(trajectorySequence2);
 
         drive.armLift.setTargetPosition(0);
         drive.armLift.setPower(0.75);
         while (drive.armLift.isBusy() && opModeIsActive()) {
         }
+
+        TrajectorySequence trajectorySequence3 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                .forward(18)
+                .turn(Math.toRadians(50))
+                .forward(13)
+                .build();
 
         drive.followTrajectorySequence(trajectorySequence3);
 
@@ -148,7 +157,7 @@ public class RoadRunnerAutoBL extends LinearOpMode {
 
         drive.carouselSpinner.setPower(0.0);
 
-        TrajectorySequence trajectorySequence4 = drive.trajectorySequenceBuilder(trajectorySequence3.end())
+        TrajectorySequence trajectorySequence4 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .back(10)
                 .turn(-Math.toRadians(180 - drive.getAngle()))
                 .forward(18)

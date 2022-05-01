@@ -24,7 +24,7 @@ public class T265Localizer implements Localizer {
     private Pose2d rawPose = new Pose2d();
     private T265Camera.CameraUpdate up;
 
-    public T265Camera slamra;
+    public static T265Camera slamra = null;
 
     public static double slamraX = 0;
     public static double slamraY = 0;
@@ -43,7 +43,12 @@ public class T265Localizer implements Localizer {
         rawPose = new Pose2d();
 
         if (slamra == null) {
-            slamra = new T265Camera(new Transform2d(new Translation2d(0,0), new Rotation2d(0)), 0.0, hardwareMap.appContext);
+            slamra = new T265Camera(new Transform2d(new Translation2d(0,0), new Rotation2d(Math.toRadians(90))), 0, hardwareMap.appContext);
+            RobotLog.d("Created Realsense Object");
+            setPoseEstimate(new Pose2d(0,0,0));
+        } else {
+            stopRealsense();
+            slamra = new T265Camera(new Transform2d(new Translation2d(0,0), new Rotation2d(Math.toRadians(90))), 0, hardwareMap.appContext);
             RobotLog.d("Created Realsense Object");
             setPoseEstimate(new Pose2d(0,0,0));
         }
@@ -52,7 +57,7 @@ public class T265Localizer implements Localizer {
         } catch (Exception ignored) {
             RobotLog.v("Realsense already started");
             if (resetPos) {
-                slamra.setPose(new com.arcrobotics.ftclib.geometry.Pose2d(0,0, new Rotation2d(0)));
+//                slamra.setPose(new com.arcrobotics.ftclib.geometry.Pose2d(0,0, new Rotation2d(0)));
             }
         }
         if (slamra.getLastReceivedCameraUpdate().confidence == T265Camera.PoseConfidence.Failed) {
@@ -74,7 +79,7 @@ public class T265Localizer implements Localizer {
             Translation2d oldPose = up.pose.getTranslation();
             Rotation2d oldRot = up.pose.getRotation();
             //The T265's unit of measurement is meters.  dividing it by .0254 converts meters to inches.
-            rawPose = new Pose2d(oldPose.getX() / .0254, oldPose.getY() / .0254, norm(oldRot.getRadians() + 0)); //raw pos and angle mod.
+            rawPose = new Pose2d(oldPose.getX() / .0254, oldPose.getY() / .0254, norm(oldRot.getRadians() + Math.PI)); //raw pos and angle mod.
             mPoseEstimate = rawPose.plus(poseOffset); //offsets the pose to be what the pose estimate is;
         } else {
             RobotLog.v("NULL Camera Update");
@@ -82,10 +87,10 @@ public class T265Localizer implements Localizer {
 
 //       try {
 //           if (up.confidence == T265Camera.PoseConfidence.Failed) {
-//               RobotLog.setGlobalWarningMessage("Realsense Failed");
+//               RobotLog.v("Realsense Failed");
 //           }
 //       } catch (Exception e) {
-//           RobotLog.setGlobalWarningMessage("Realsense Might have failed");
+//           RobotLog.v("Realsense Migkht have failed");
 //       }
 //        RobotLog.v("Raw POS: " + rawPose.toString());
 //        RobotLog.v("POSE OFFSET " + poseOffset.toString());
@@ -100,15 +105,17 @@ public class T265Localizer implements Localizer {
 
     @Override
     public void setPoseEstimate(@NotNull Pose2d pose2d) {
-        RobotLog.v("Set Pose to " + pose2d.toString());
-        //  Pose2d newPos = new Pose2d(pose2d.getX() * .0254, pose2d.getY() * .0254, pose2d.getHeading());
-        // slamra.setPose(new com.arcrobotics.ftclib.geometry.Pose2d(newPos.getX(), newPos.getY(), new Rotation2d(newPos.getHeading())));
-        pose2d = new Pose2d(pose2d.getX(),pose2d.getY(),0);
-        RobotLog.v("SETTING POSE ESTIMATE TO " + pose2d.toString());
+        pose2d = new Pose2d(pose2d.getX(), pose2d.getY(), norm(pose2d.getHeading() + 3 * Math.PI / 2));
+        RobotLog.v("Set Pose to " + pose2d);
+//        Pose2d newPos = new Pose2d(pose2d.getX() * .0254, pose2d.getY() * .0254, pose2d.getHeading());
+//        slamra.setPose(new com.arcrobotics.ftclib.geometry.Pose2d(newPos.getX(), newPos.getY(), new Rotation2d(newPos.getHeading())));
+//        slamra.setPose(new com.arcrobotics.ftclib.geometry.Pose2d(0,0, new Rotation2d(0)));
+//        pose2d = new Pose2d(pose2d.getX(),pose2d.getY(),0);
+        RobotLog.v("SETTING POSE ESTIMATE TO " + pose2d);
         poseOffset = pose2d.minus(rawPose);
-        poseOffset = new Pose2d(poseOffset.getX(), poseOffset.getY(), Math.toRadians(0));
-        RobotLog.v("SET POSE OFFSET TO " + poseOffset.toString());
-        // mPoseEstimate = rawPose.plus(poseOffset); //set mPose to new pose.
+        poseOffset = new Pose2d(poseOffset.getX(), poseOffset.getY(), norm(pose2d.getHeading() + 3 * Math.PI / 2));
+        RobotLog.v("SET POSE OFFSET TO " + poseOffset);
+        mPoseEstimate = rawPose.plus(poseOffset); //set mPose to new pose.
 //        /* Alternate to using pose2d.minus()*/
 //        try {
 //            poseOffset = new Pose2d(pose2d.getX() - rawPose.getX(), pose2d.getY() - rawPose.getY(), pose2d.getHeading() - rawPose.getHeading());
@@ -125,7 +132,7 @@ public class T265Localizer implements Localizer {
      * @return the heading of the robot (in radains)
      */
     public static double getHeading() {
-        return norma(mPoseEstimate.getHeading() - 0); // angle mod
+        return norma(mPoseEstimate.getHeading() - Math.PI); // angle mod
     }
 
     /**
@@ -134,10 +141,8 @@ public class T265Localizer implements Localizer {
      */
     @Override
     public void update() {
-        if (slamra != null) {
-            up = slamra.getLastReceivedCameraUpdate();
-            poseConfidence = up.confidence;
-        }
+        up = slamra.getLastReceivedCameraUpdate();
+        poseConfidence = up.confidence;
     }
 
     /**
@@ -149,14 +154,8 @@ public class T265Localizer implements Localizer {
     @Nullable
     @Override
     public Pose2d getPoseVelocity() {
-        //variable up is updated in update()
-
-        if (up != null) {
-            ChassisSpeeds velocity = up.velocity;
-            return new Pose2d(velocity.vxMetersPerSecond /.0254,velocity.vyMetersPerSecond /.0254,velocity.omegaRadiansPerSecond);
-        } else {
-            return new Pose2d(0,0,0);
-        }
+        ChassisSpeeds velocity = up.velocity;
+        return new Pose2d(velocity.vxMetersPerSecond /.0254,velocity.vyMetersPerSecond /.0254,velocity.omegaRadiansPerSecond);
     }
 
     /**
@@ -169,7 +168,8 @@ public class T265Localizer implements Localizer {
         while (angle<=0) angle+=Math.toRadians(360);
         return angle;
     }
-    private static double norma(double angle)
+
+    public static double norma(double angle)
     {
         while (angle>Math.toRadians(360)) angle-=Math.toRadians(360);
         while (angle<=0) angle+=Math.toRadians(360);

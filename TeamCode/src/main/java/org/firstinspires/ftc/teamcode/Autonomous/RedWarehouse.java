@@ -1,17 +1,18 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
 import android.annotation.SuppressLint;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.Drive;
-import org.firstinspires.ftc.teamcode.dev.TensorFlow;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.util.SaveJSON;
@@ -21,21 +22,21 @@ import java.util.List;
 
 /*
     Dragon Droids Team #19643
-    RoadRunnerAutoRR
+    RedWarehouse
 */
 
 @Config
 
-@Autonomous(name="Red Carousel", group = "drive")
-public class RoadRunnerAutoRR extends LinearOpMode {
+@Autonomous(name="Red Warehouse", group = "drive")
+public class RedWarehouse extends LinearOpMode {
     public int[] armPositions = {
-            -320, // Low Position
-            -360, // Middle Position
+            -320, // Bottom Position
+            -430, // Middle Position
             -575, // High Position
     };
 
     /*
-      Start TensorFlow
+        Start TensorFlow
      */
 
     private static final String TFOD_MODEL_ASSET = "model_ycup.tflite";
@@ -60,109 +61,122 @@ public class RoadRunnerAutoRR extends LinearOpMode {
                     "81+4+4DhbQ2tWq9Xisz4NvAu2l1IN8uj6qvmjmg02YfS7+REk+/NxVrS15d2fvFh7lE9RMlLtMwgkK9903e2mgxf48yL9IQMXoTfBJhY3" +
                     "X4cSKSzz4XGKDjqvIXnAd47NYB8TXuOwY0N8bL9+jPNPaw3E2SgOU2imUU6kCAQvrUPF24AI1FqtvlhZbeYLe/EQVJaC2fqcODw2Xp5px" +
                     "j1h4lS6tGXQqRZ1we0i4Wf/S+1/A4GDcb3B7hfpkRJP6AYvLxisBlP2qj";
+
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
-    final boolean debugMode = false;
+    final boolean debugMode = true;
+
     /*
-    End TensorFlow Stuff.
+        End TensorFlow
      */
 
     @Override
     public void runOpMode() throws InterruptedException {
-        // Red Carousel
-        Drive drive = new Drive(hardwareMap);
+        // Red Near Warehouse
+        Drive drive = new Drive(hardwareMap, true);
 
-        TensorFlow tensorflow = new TensorFlow(hardwareMap);
+        initVuforia();
+        initTfod();
+        if (tfod != null) {
+            tfod.activate();
+            tfod.setZoom(1.3, 16.0/9.0);
+        }
 
         // Declare positions variables
         char positionDetected = 'L';
-        while (!opModeIsActive()) {
-            positionDetected = tensorflow.detectPosition(telemetry);
-            positionDetected = positionDetected == 'N' ? 'L' : positionDetected;
-            sleep(10);
-            telemetry.addData("Pos Detected: ", positionDetected);
-            telemetry.update();
-        }
+//        int i = 0;
+//        while (!opModeIsActive()) {
+//            if (i < 500) {
+//                positionDetected = detectPosition();
+//                telemetry.addData("Iteration", i);
+//                telemetry.update();
+//                sleep(10);
+//                i++;
+//            } else {
+//                positionDetected = 'L';
+//                break;
+//            }
+//
+//        }
+
+
+
+        telemetry.addData("Pos Detected: ", positionDetected);
+        // telemetry.update();
 
         int index = "RCL".indexOf(positionDetected);
 
-        if (isStopRequested()) return;
-
         waitForStart();
 
-        sleep(1000);
+        if (isStopRequested()) return;
 
-        drive.setPoseEstimate(new Pose2d(-30,-60,Math.toRadians(90)));
+        if (index < 2) {
+            index += 1;
+            drive.setPoseEstimate(new Pose2d(12,61,Math.toRadians(270)));
 
-        TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(-30,-60,Math.toRadians(90)))
-                .forward(6)
-                .turn(Math.toRadians(152))
-                .back(15)
-                .build();
+            drive.updatePoseEstimate();
 
-        TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(trajectorySequence0.end())
-                .back(4)
-                .build();
+            telemetry.addData("Pose Estimate", drive.getPoseEstimate());
+            telemetry.update();
 
-        TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(trajectorySequence1.end())
-                .forward(8)
-                .build();
+            sleep(3000);
 
-        TrajectorySequence trajectorySequence3 = drive.trajectorySequenceBuilder(trajectorySequence2.end())
-                .forward(5)
-                .turn(-Math.toRadians(60))
-                .forward(35)
-                .back(6)
-                .turn(Math.toRadians(90))
-                .forward(5)
-                .build();
+            TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                    .forward(6)
+                    .turn(-Math.toRadians(150))
+                    .back(15)
+                    .build();
 
-        TrajectorySequence trajectorySequence4 = drive.trajectorySequenceBuilder(trajectorySequence3.end())
-                .back(20.5)
-                .build();
+            drive.followTrajectorySequence(trajectorySequence0);
 
-        drive.followTrajectorySequence(trajectorySequence0);
+            drive.armLift.setTargetPosition(armPositions[index]);
+            drive.armLift.setPower(0.75);
+            while (drive.armLift.isBusy() && opModeIsActive()) {}
+            DriveConstants.MAX_ACCEL = 80;
 
-        drive.armLift.setTargetPosition(armPositions[index]);
-        drive.armLift.setPower(0.75);
-        while (drive.armLift.isBusy() && opModeIsActive()) {}
-        drive.followTrajectorySequence(trajectorySequence1);
-        if (armPositions[index] == -575) {
-            drive.armClamp.setPosition(0.0);
-        } else if(armPositions[index] != 0) {
+            TrajectorySequence trajectorySequence2 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                    .back(2 + ((index % 2) * 6.5))
+                    .build();
+
+            drive.followTrajectorySequence(trajectorySequence2);
+
             drive.armClamp.setPosition(1.0);
+
+            sleep(2000);
+
+            TrajectorySequence trajectorySequence1 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                    .forward(10)
+                    .build();
+
+            drive.followTrajectorySequence(trajectorySequence1);
+
+            drive.armClamp.setPosition(0.5);
+            drive.armLift.setTargetPosition(0);
+            drive.armLift.setPower(0.75);
+
+            DriveConstants.MAX_ACCEL = 90;
+
+            while (drive.armLift.isBusy() && opModeIsActive()) {}
+
+            TrajectorySequence trajectorySequence3 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                    .turn(Math.toRadians(70))
+                    .forward(70)
+                    .build();
+
+
+            drive.followTrajectorySequence(trajectorySequence3);
+        } else {
+            TrajectorySequence trajectorySequence0 = drive.trajectorySequenceBuilder(new Pose2d(0,0, 0))
+                    .forward(15)
+                    .turn(-Math.toRadians(90))
+                    .forward(30)
+                    .turn(Math.toRadians(180))
+                    .build();
+            DriveConstants.MAX_ACCEL = 120;
+            drive.followTrajectorySequence(trajectorySequence0);
+            DriveConstants.MAX_ACCEL = 90;
         }
-
-        sleep(2000);
-
-        DriveConstants.MAX_ACCEL = 120;
-
-        drive.followTrajectorySequence(trajectorySequence2);
-
-        drive.armClamp.setPosition(0.5);
-
-        drive.armLift.setTargetPosition(0);
-        drive.armLift.setPower(0.75);
-        while (drive.armLift.isBusy() && opModeIsActive()) {}
-
-        drive.followTrajectorySequence(trajectorySequence3);
-
-        drive.carouselSpinner.setPower(-0.65);
-
-        sleep(2250);
-
-        drive.carouselSpinner.setPower(-0.8);
-
-        sleep(1000);
-
-        drive.carouselSpinner.setPower(0.0);
-
-
-
-        drive.followTrajectorySequence(trajectorySequence4);
-
-        DriveConstants.MAX_ACCEL = 90;
 
         JSONObject position = new JSONObject();
 
@@ -178,6 +192,7 @@ public class RoadRunnerAutoRR extends LinearOpMode {
         telemetry.update();
 
         telemetry.addData("Run", "Done!");
+        telemetry.update();
     }
 
     private void initVuforia() {

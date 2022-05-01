@@ -33,6 +33,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.teamcode.TeleOp.DDTeleOp;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -107,7 +108,7 @@ public class Drive extends TankDrive {
 
     public T265Localizer t265Localizer = null;
 
-    public Drive(HardwareMap hardwareMap) {
+    public Drive(HardwareMap hardwareMap, boolean t265) {
         super(kV, kA, kStatic, TRACK_WIDTH);
 
         follower = new TankPIDVAFollower(AXIAL_PID, CROSS_TRACK_PID,
@@ -163,8 +164,11 @@ public class Drive extends TankDrive {
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
 
-        t265Localizer = new T265Localizer(hardwareMap);
-//        setLocalizer(t265Localizer);
+        t265Localizer = new T265Localizer(hardwareMap, true);
+
+        if (t265) {
+            setLocalizer(t265Localizer);
+        }
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(follower, HEADING_PID);
         armClamp = hardwareMap.get(Servo.class, "armClamp");
@@ -232,6 +236,11 @@ public class Drive extends TankDrive {
         followTrajectorySequenceAsync(trajectorySequence);
         waitForIdle();
     }
+
+    public void breakFollowing() {
+        trajectorySequenceRunner.breakFollowing();
+    }
+
 
     public Pose2d getLastError() {
         return trajectorySequenceRunner.getLastPoseError();
@@ -396,5 +405,13 @@ public class Drive extends TankDrive {
             tel.addData("Goal", goal.toString());
             tel.update();
         }
+    }
+
+    public void raiseArm(int i) {
+        DDTeleOp.armTarget = DDTeleOp.positions[i];
+        DDTeleOp.armSpeed = DDTeleOp.armSpeedMove;
+        armLift.setTargetPosition(DDTeleOp.armTarget);
+        armLift.setPower(DDTeleOp.armSpeed);
+        DDTeleOp.currentHeight = DDTeleOp.positions[i];
     }
 }
